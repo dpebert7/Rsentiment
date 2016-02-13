@@ -1,2 +1,2 @@
-# Rsentiment
-Sentiment analysis of Tweets
+## Rsentiment
+Sentiment analysis of Tweets.
