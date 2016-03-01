@@ -16,8 +16,8 @@ library(tm) # for building term frequency matrix from corpus
 
 # setup ----
 source("functions.R") #get cleaning function, AFINN_lexicon
-happy = read.csv("happy_tweets2016.csv", stringsAsFactors = FALSE)
-sad = read.csv("sad_tweets2016.csv", stringsAsFactors = FALSE)
+happy = read.csv("happy_tweets.csv", stringsAsFactors = FALSE)
+sad = read.csv("sad_tweets.csv", stringsAsFactors = FALSE)
 
 happy$polarity = 1
 sad$polarity = -1
@@ -25,10 +25,6 @@ semisuper = rbind(as.data.frame(happy[,c("text", "polarity")]),sad[,c("text", "p
 semisuper$clean = clean.data(semisuper$text)
 dim(semisuper)
 table(semisuper$polarity)
-
-#70% training data ----
-set.seed(945)
-train = sample(1:nrow(semisuper), 0.7*nrow(semisuper))
 
 #Term Frequencies (May take a long time to run! <2 minutes for 6000 tweets) ----
 a = Sys.time()
@@ -38,21 +34,29 @@ Sys.time()-a
 dim(term.freq)
 semisuper$AFINN.rating = as.vector(term.freq %*% AFINN_lexicon$score)
 
-#Naive Bayes Model
-semisuper$polarity=as.factor(semisuper$polarity)
-nb.model=naiveBayes(polarity~AFINN.rating,
-                    data=semisuper[train,])
-
 #Example ----
 semisuper$clean[20]
 AFINN_lexicon[AFINN_lexicon$word == "welcome",]
 AFINN_lexicon$word[2420]
 term.freq[20,2420]  # the word "welcome" occurs one time in the 20th tweet. Its corresponding AFINN score is +2
 
+#70% training data ----
+set.seed(945)
+train = sample(1:nrow(semisuper), 0.7*nrow(semisuper))
+
+#Naive Bayes Model
+semisuper$polarity=as.factor(semisuper$polarity)
+nb.model=naiveBayes(polarity~AFINN.rating,
+                    data=semisuper[train,])
+
 #plot reveals a lot of overlap. This doesn't look like it will be a good classifier
 ggplot(semisuper[train,],
        aes(AFINN.rating, fill = as.factor(polarity))) +
   geom_density(alpha = .2)
+
+
+
+
 
 #test accuracy
 pred.polarity=predict(nb.model, newdata=semisuper[-train,])
@@ -204,22 +208,29 @@ range(inv.doc.freq)
 
 tf.idf = term.freq %*% diag(inv.doc.freq)
 
+
 # Random Forest Using NDSI tf.idf ----
 semisuper$polarity=as.factor(semisuper$polarity)
 rf.semisuper=data.frame(polarity=semisuper$polarity,tf.idf)
 
+
 #Random Forest (Takes about 15 min to run)
 rf.model=randomForest(polarity~.,data=rf.semisuper[train,])
 
-#Classification Accuracy
-pred.polarity=predict(rf.model,
-                       newdata=rf.semisuper[-train,])
-confusionMatrix(pred.polarity,semisuper$polarity[-train])
+
+
+
+pred.sentiment=predict(rf.model,
+                       newdata=rf.movie.data[-train,])
+
+confusionMatrix(pred.sentiment,semisuper$sentiment[-train])
+
 
 #ROC Curve
+
 phat=predict(rf.model,
-             newdata=rf.semisuper[-train,],
+             newdata=rf.movie.data[-train,],
              type="prob")
 
 library(pROC)
-plot(roc(rf.semisuper$polarity[-train],phat[,2]))
+plot(roc(movie.data$sentiment[-train],phat[,2]))
