@@ -88,7 +88,12 @@ grabLAtweets = function(happy_terms = happy_search_terms, sad_terms = sad_search
 
 
 #still need to remove duplicates
-
+newtweets <- searchTwitter(searchString = "#sad",
+                           n=10000, 
+                           lang = "en", 
+                           locale = "los angeles", 
+                           since = "2016-01-29", 
+                           until = "2016-02-29")
 
 
 
