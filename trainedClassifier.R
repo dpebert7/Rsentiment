@@ -15,14 +15,36 @@ library(tm) # for building term frequency matrix from corpus
 
 
 # setup ----
-source("functions.R") #get cleaning function, AFINN_lexicon
-happy = read.csv("happy_tweets.csv", stringsAsFactors = FALSE)
-sad = read.csv("sad_tweets.csv", stringsAsFactors = FALSE)
 
+#import happy and sad tweets for semi-supervision
+source("functions.R") #get cleaning function, AFINN_lexicon
+happy = read.csv(file = "~/Desktop/Huang Research/Rsentiment/happy_tweets_2014", nrows = 110000, header = TRUE, colClasses = 
+                          c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
+dim(happy)
+
+sad = read.csv(file = "~/Desktop/Huang Research/Rsentiment/sad_tweets_2014", nrows = 50000, header = TRUE, colClasses = 
+                        c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
+dim(sad)
+
+#Clean tweets, remove blank tweets, then undersample from happy so that happy has as many tweets as sad does.
+happy$text = clean.data(happy$text)
+sad$text = clean.data(sad$text)
+
+happy  = happy[happy$text!="",]
+sad  = sad[sad$text!="",]
+
+set.seed(127)
+index = sample(nrow(happy),nrow(sad))
+happy = happy[index,]
+dim(happy)
+dim(sad)
+
+
+# Initialize polarity of happy and sad tweets
 happy$polarity = 1
 sad$polarity = -1
-semisuper = rbind(as.data.frame(happy[,c("text", "polarity")]),sad[,c("text", "polarity")])
-semisuper$clean = clean.data(semisuper$text)
+semisuper = rbind(as.data.frame(happy[,c("text", "polarity")]),sad[,c("text", "polarity")]) 
+colnames(semisuper) = c("clean", "polarity") #note that cleaning already took place, so these column names are appropriate
 dim(semisuper)
 table(semisuper$polarity)
 
