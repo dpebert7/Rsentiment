@@ -36,3 +36,7 @@ AFINN_lexicon.frequencies=function(x){
   str_count(x,AFINN_lexicon$word.clean)
 }
 
+ndsi.frequencies=function(x){
+  str_count(x,freq.all$word[1:1024])
+}
+
