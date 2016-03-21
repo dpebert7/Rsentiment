@@ -6,12 +6,6 @@
 x = read.csv(file = "~/Desktop/Huang Research/Rsentiment/ComTweetsLA.csv", nrows = 9400000, header = TRUE, colClasses = 
                c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
 
-
-x$semiclean = gently.clean.data(x$text)
-length(grep("\\bhome\\b:)", x$semiclean, value = FALSE)) # value = FALSE returns row number. "\\bhome\\b" searches for EXACTLY "home"
-grep("\\bhome\\b|\\bhappy\\b", x$semiclean, value = TRUE) # value = TRUE returns the cell contents rather than the row number.
-
-
 # HAPPY EMOTICONS
 length(grep("\\:\\)", x$text, value = TRUE)) #67189 :)'s in the whole set. Takes about 11 sec. to run
 length(grep("\\(\\:", x$text, value = TRUE)) #14401 (:'s in the whole set. 
@@ -37,6 +31,8 @@ x = unique(x[happy_indices,]) #Rewrite over x to avoid memory problems
 dim(x) # Looks good
 write.csv(x,file = "~/Desktop/Huang Research/Rsentiment/happy_tweets_2014", row.names = FALSE)
 
+rm(x)
+#reload x after this part. Sorry about the inconvenience :(
 
 
 #SAD EMOTICONS
@@ -63,6 +59,9 @@ dim(unique(x[sad_indices,])) #There are 49404 unique sad rows
 x = unique(x[sad_indices,]) #Write over x to avoid memory problems
 dim(x) # Looks good
 write.csv(x,file = "~/Desktop/Huang Research/Rsentiment/sad_tweets_2014", row.names = FALSE)
+
+rm(x)
+#reload x after this part. Sorry about the inconvenience :(
 
 
 # Word cloud for sad and happy tweets ----

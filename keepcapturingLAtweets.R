@@ -2,7 +2,7 @@
 # Continually capture tweets from LA county
 
 # From 1/29/2016 to 3/1/2016 this script collected ~5 million tweets from LA county
-
+# The most up-to-date version of this script is running on the shared school computer.
 
 library(streamR)
 library(rjson)
@@ -22,7 +22,7 @@ filterStream(file.name = "example.json", # Save tweets in a json file
 
 
 
-keepCapturingTweets = function(file.name, stop.time){
+#keepCapturingTweets = function(file.name, stop.time){
   require(streamR)
   require(rjson)
   i = 25
