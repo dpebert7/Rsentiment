@@ -35,7 +35,7 @@ x[happy_indices[duplicated(happy_indices)],] #461 entries have multiple distinct
 dim(unique(x[happy_indices,])) #There are 107306 unique happy rows
 x = unique(x[happy_indices,]) #Rewrite over x to avoid memory problems
 dim(x) # Looks good
-write.csv(x,file = "happy_tweets_2014", row.names = FALSE)
+write.csv(x,file = "~/Desktop/Huang Research/Rsentiment/happy_tweets_2014", row.names = FALSE)
 
 
 
@@ -62,18 +62,18 @@ dim(x[sad_indices[duplicated(sad_indices)],]) #92 entries have multiple distinct
 dim(unique(x[sad_indices,])) #There are 49404 unique sad rows
 x = unique(x[sad_indices,]) #Write over x to avoid memory problems
 dim(x) # Looks good
-write.csv(x,file = "sad_tweets_2014", row.names = FALSE)
+write.csv(x,file = "~/Desktop/Huang Research/Rsentiment/sad_tweets_2014", row.names = FALSE)
 
 
 # Word cloud for sad and happy tweets ----
 library(wordcloud)
 library(tm)
 # load happy and sad tweets
-happy_tweets = read.csv(file = "happy_tweets_2014", nrows = 110000, header = TRUE, colClasses = 
+happy_tweets = read.csv(file = "~/Desktop/Huang Research/Rsentiment/happy_tweets_2014", nrows = 110000, header = TRUE, colClasses = 
                c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
 dim(happy_tweets)
 
-sad_tweets = read.csv(file = "sad_tweets_2014", nrows = 50000, header = TRUE, colClasses = 
+sad_tweets = read.csv(file = "~/Desktop/Huang Research/Rsentiment/sad_tweets_2014", nrows = 50000, header = TRUE, colClasses = 
                           c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
 dim(sad_tweets)
 
