@@ -31,6 +31,21 @@ clean.data = function(documents){
   return(cleantext)
 }
 
+word.freq <- function(document.vector, sparsity = .99){
+  # construct corpus
+  temp.corpus <- Corpus(VectorSource(document.vector))
+  # construct tf matrix and remove sparse terms
+  temp.tf <- DocumentTermMatrix(temp.corpus,
+                                control = list(stopwords = stopwords('english'),
+                                               removeNumbers = T))
+  temp.tf <- removeSparseTerms(temp.tf, sparsity)
+  temp.tf <- as.matrix(temp.tf)
+  # construct word frequency df
+  freq.df <- colSums(temp.tf)
+  freq.df <- data.frame(word = names(freq.df), freq = freq.df)
+  rownames(freq.df) <- NULL
+  return(freq.df)
+}
 
 AFINN_lexicon.frequencies=function(x){
   str_count(x,AFINN_lexicon$word.clean)

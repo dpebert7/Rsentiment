@@ -13,18 +13,15 @@ library(pROC) #ROC curves
 library(randomForest)
 library(tm) # for building term frequency matrix from corpus
 
-
 # setup ----
 
 #import happy and sad tweets for semi-supervision
 source("functions.R") #get cleaning function, AFINN_lexicon
 happy = read.csv(file = "~/Desktop/Huang Research/Rsentiment/happy_tweets_2014", nrows = 110000, header = TRUE, colClasses = 
                           c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
-dim(happy)
 
 sad = read.csv(file = "~/Desktop/Huang Research/Rsentiment/sad_tweets_2014", nrows = 50000, header = TRUE, colClasses = 
                         c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
-dim(sad)
 
 #Clean tweets, remove blank tweets, then undersample from happy so that happy has as many tweets as sad does.
 happy$text = clean.data(happy$text)
@@ -37,7 +34,7 @@ set.seed(127)
 index = sample(nrow(happy),nrow(sad))
 happy = happy[index,]
 dim(happy)
-dim(sad)
+dim(sad) #both should have 48124 rows
 
 
 # Initialize polarity of happy and sad tweets
@@ -88,9 +85,11 @@ head(word.freq(semisuper$clean), 100)
 # Normalized Sentiment Difference Index (NDSI) ----
 #Word Frequencies for Positive and Negative Reviews in Training Data
 word.freq.pos = word.freq(semisuper$clean[semisuper$polarity == 1],
-                          sparsity=0.999)
+                          sparsity=0.9999) #terms must occur in at least 1 out of 1000
 word.freq.neg = word.freq(semisuper$clean[semisuper$polarity == -1],
-                          sparsity=0.999)
+                          sparsity=0.9999)
+dim(word.freq.pos)
+dim(word.freq.neg)
 word.freq.pos[1:20,]
 word.freq.neg[1:20,]
 
@@ -137,7 +136,7 @@ head(freq.all$word)
 freq.all$word = as.character(freq.all$word)
 library(stringr)
 ndsi.frequencies=function(x){
-  str_count(x,freq.all$word[1:1024])
+  str_count(x,freq.all$word[1:1024]) #1024 words with highest NDSI score
 }
 
 #Term Frequencies (Takes about 25 minutes to run with 100k tweets)
@@ -153,16 +152,23 @@ range(inv.doc.freq)
 tf.idf = term.freq %*% diag(inv.doc.freq)
 
 
+#rpart tree (runs faster)
+library(rpart)
+tree = rpart(polarity~., data = rf.semisuper)
+
+pred.sentiment=predict(tree,
+                       newdata=)
+
+confusionMatrix(pred.sentiment,semisuper$sentiment)
+
 # Random Forest Using NDSI tf.idf ----
 semisuper$polarity=as.factor(semisuper$polarity)
 rf.semisuper=data.frame(polarity=semisuper$polarity,tf.idf)
 
-
-#Random Forest (Takes about 15 min to run)
-rf.model=randomForest(polarity~.,data=rf.semisuper[train,])
-
-
-
+#Random Forest (Takes hours to run)
+a = Sys.time()
+rf.model=randomForest(polarity~.,data=rf.semisuper)
+Sys.time()-a
 
 pred.sentiment=predict(rf.model,
                        newdata=rf.movie.data[-train,])

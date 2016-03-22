@@ -108,9 +108,9 @@ library(stringr)
 
 #Examples
 
-fruit.names=c("apple","banana","cantaloupe","date")
+fruit.names=c("happy","banana","cantaloupe","date")
 
-str_count("i want to eat an apple or a banana, preferably an apple",fruit.names)
+str_count("i want to eat an #ohhappyday or a banana, preferably an apple",fruit.names)
 
 
 
