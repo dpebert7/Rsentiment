@@ -127,6 +127,19 @@ source("functions.R") #get cleaning function, AFINN_lexicon
     table(train$AFINN.rating2.pred)
     table(train$polarity, train$WIEBE.rating.pred) #accuracy is (20817+14342)/(20817+14342+7018+12775) = 64% (excluding neutral tweets)
     
+    
+  # Calculate EMOLEX scores for train and test using classify.sentiment
+    #test data
+    test$emolex.rating = classify.sentiment(test$clean, lexicon = emolex)
+    test$emolex.rating.pred = sign(test$emolex.rating)
+    table(test$emolex.rating.pred)
+    table(test$polarity, test$emolex.rating.pred) #accuracy is (73+86)/(73+86+45+56) = 61.1% (excluding neutral tweets)
+    
+    #train data
+    train$emolex.rating = classify.sentiment(train$clean, lexicon = emolex)
+    train$emolex.rating.pred = sign(train$emolex.rating)
+    table(train$AFINN.rating2.pred)
+    table(train$polarity, train$emolex.rating.pred) #accuracy is (16222+16929)/(16222+16929+10310+9263) = 62.8% (excluding neutral tweets)
   
     
     

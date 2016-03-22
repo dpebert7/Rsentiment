@@ -21,6 +21,16 @@
 
 #lexicons MUST be formatted so that the first column lists words and the second column gives the sentiment score of that word.
 
+#EmoLex
+emolex2 = read.csv(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/EmoLex/NRC-emotion-lexicon-wordlevel-alphabetized-v0.92.txt", 
+                   sep = "\t", header = FALSE)
+colnames(emolex) = c("word", "emotion", "indicator")
+emolex = emolex[emolex$emotion == "negative"|emolex$emotion == "positive",]
+emolex = emolex[emolex$indicator == 1,]
+emolex[emolex$emotion == "negative",]$indicator = -1
+emolex = emolex[c("word", "indicator")]
+colnames(emolex) = c("word", "score")
+
 #Wiebe
 Wiebe_lexicon = read.csv(system.file("data/subjectivity.csv.gz", 
                                      package = "sentiment"), header = FALSE, stringsAsFactors = FALSE)

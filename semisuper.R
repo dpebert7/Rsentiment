@@ -7,18 +7,19 @@
                 c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
 
 # HAPPY EMOTICONS ----
-  happy_emoticons = c(":)", "(:", ":-)", "(-:", ":D", ":-D", "=)", "(=", "☺")
+  happy_emoticons = c(":)", "(:", ":-)", "(-:", ":D", ":-D", "=)", "(=", "☺", "☻")
 
-  length(grep("\\:\\)", x$text, value = TRUE)) #67189 :)'s in the whole set. Takes about 11 sec. to run
-  length(grep("\\(\\:", x$text, value = TRUE)) #14401 (:'s in the whole set. 
-  length(grep("\\:-\\)", x$text, value = TRUE)) #14069 :-)'s in the whole set. 
-  length(grep("\\(-\\:", x$text, value = TRUE)) #1903 (-:'s in the whole set. 
-  length(grep("\\:D", x$text, value = TRUE)) #9724 :D's in the whole set SEEMS TOO MANY
-  length(grep("\\:-D", x$text, value = TRUE)) #20230 :-D's in the whole set
-  length(grep("=\\)", x$text, value = TRUE)) #1467 =)'s in the whole set
-  length(grep("\\(=", x$text, value = TRUE)) #195 (='s in the whole set
-  length(grep("☺", x$text, value = TRUE)) #38441 of them in the whole set
-
+  grep("\\:\\)", x$text, value = TRUE) #67189 :)'s in the whole set. Takes about 11 sec. to run
+  grep("\\(\\:", x$text, value = TRUE) #14401 (:'s in the whole set. 
+  grep("\\:-\\)", x$text, value = TRUE) #14069 :-)'s in the whole set. 
+  grep("\\(-\\:", x$text, value = TRUE) #1903 (-:'s in the whole set. 
+  grep("\\:D", x$text, value = TRUE) #9724 :D's in the whole set SEEMS TOO MANY
+  grep("\\:-D", x$text, value = TRUE) #20230 :-D's in the whole set
+  grep("=\\)", x$text, value = TRUE) #1467 =)'s in the whole set
+  grep("\\(=", x$text, value = TRUE) #195 (='s in the whole set
+  grep("☺", x$text, value = TRUE) #38441 of them in the whole set
+  grep("☻", x$text, value = TRUE) #130 these in the whole set
+  grep("☀", x$text, value = TRUE) #7754 of these in the whole set. Leave these out, though
 
   happy_indices = c(
     grep("\\:\\)", x$text, value = FALSE),
@@ -29,12 +30,13 @@
     grep("\\:-D", x$text, value = FALSE),
     grep("=\\)", x$text, value = FALSE),
     grep("\\(=", x$text, value = FALSE),
-    grep("☺", x$text, value = FALSE)
+    grep("☺", x$text, value = FALSE),
+    grep("☻", x$text, value = TRUE)
   )
 
-  length(happy_indices) #happy_indices has length 107767
-  x[happy_indices[duplicated(happy_indices)],] #461 entries have multiple distinct happy emoticons
-  dim(unique(x[happy_indices,])) #There are 107306 unique happy rows
+  length(happy_indices) #happy_indices has length 148000
+  dim(x[happy_indices[duplicated(happy_indices)],]) #698 entries have multiple distinct happy emoticons
+  dim(unique(x[happy_indices,])) #There are 147176 unique happy rows
   x = unique(x[happy_indices,]) #Rewrite over x to avoid memory problems
   dim(x) # Looks good
   write.csv(x,file = "~/Desktop/Huang Research/Rsentiment/happy_tweets_2014", row.names = FALSE)
@@ -43,7 +45,7 @@
   #reload x after this part. Sorry about the inconvenience :(
 
 # SAD EMOTICONS ----
-  happy_emoticons = c(":(", ":-(", "):", ")-:", ":[", "]:", ":{", "}:","=(", ")=")
+  happy_emoticons = c(":(", ":-(", "):", ")-:", ":[", "]:", ":{", "}:","=(", ")=", "☹")
 
   grep("\\:\\(", x$text, value = TRUE) #40065 :('s in the whole set. 
   grep("\\:-\\(", x$text, value = TRUE) #3485 :-('s in the whole set. 
@@ -55,7 +57,9 @@
   grep("\\}:", x$text, value = TRUE) #25 }:'s in the whole set.
   grep("=\\(", x$text, value = TRUE) #131 =('s in the whole set
   grep("\\)=", x$text, value = TRUE) #59 )='s in the whole set
+  grep("☹", x$text, value = TRUE) #222 of these in the whole set
 
+  
   sad_indices = c(
     grep("\\:\\(", x$text, value = FALSE),
     grep("\\:-\\(", x$text, value = FALSE),
@@ -66,12 +70,13 @@
     grep(":\\{", x$text, value = FALSE),
     grep("\\}:", x$text, value = FALSE),
     grep("=\\(", x$text, value = FALSE),
-    grep("\\)=", x$text, value = FALSE)
+    grep("\\)=", x$text, value = FALSE),
+    grep("☹️", x$text, value = FALSE) #It appears twitter works with unicode characters. Not necessarily emoji
   )
 
-  length(sad_indices) #sad_indices has length 49496
-  dim(x[sad_indices[duplicated(sad_indices)],]) #92 entries have multiple distinct sad emoticons
-  dim(unique(x[sad_indices,])) #There are 49404 unique sad rows
+  length(sad_indices) #sad_indices has length 52347
+  dim(x[sad_indices[duplicated(sad_indices)],]) #100 entries have multiple distinct sad emoticons
+  dim(unique(x[sad_indices,])) #There are 52247 unique sad rows
   x = unique(x[sad_indices,]) #Write over x to avoid memory problems
   dim(x) # Looks good
   write.csv(x,file = "~/Desktop/Huang Research/Rsentiment/sad_tweets_2014", row.names = FALSE)
@@ -108,3 +113,4 @@
   #Make word cloud. Check reference for options 
   wordcloud(happy_corpus, max.words = 200) # ~4 minutes
   wordcloud(sad_corpus, max.words = 200) # ~3 minutes
+  
