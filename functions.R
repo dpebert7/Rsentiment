@@ -55,3 +55,30 @@ ndsi.frequencies=function(x){
   str_count(x,freq.all$word[1:1024])
 }
 
+classify.sentiment = function(documents, lexicon = AFINN_lexicon){
+  sentscorevec = laply(documents, function(documents, lex = lexicon)
+  {
+    words = unlist(strsplit(documents, " ")) #access words
+    #eventually add words to term-document matrix here?
+    indices = pmatch(words, lexicon[,1], nomatch = 0, duplicates.ok = TRUE)
+    vals = as.numeric(lexicon[indices,2])
+    #print(c(words, indices, vals))
+    
+    #fix negation
+    if(length(words)>1){
+      for(i in 2:length(words)){
+        #print(i)
+        #print(words[i-1])
+        if(words[i-1] %in% negations & words[i] != words[i-1]){
+          #print(words[(i-1):i])
+          #print("There's a negation here")
+          vals[length(vals)+1] = (-2)*as.numeric(lexicon[pmatch(words[i], lexicon[,1], nomatch = NA),2])
+        }
+      }   
+    }
+    
+    #return sum
+    return(sum(na.omit(vals)))
+  }, .progress = "text")
+  return(sentscorevec)
+}

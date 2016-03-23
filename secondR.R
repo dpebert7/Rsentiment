@@ -21,60 +21,59 @@
 
 #lexicons MUST be formatted so that the first column lists words and the second column gives the sentiment score of that word.
 
-#ANEW
-ANEW = read.csv(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/ANEW.csv", header = FALSE)
-colnames(ANEW) = c("word", "score")
-#ANEW$score = ANEW$score-(mean(ANEW$score)+1) #normalize ANEW scores to 0
-ANEW$score = ANEW$score - 5
-range(ANEW$score)
-head(ANEW[order(-ANEW$score),], 20) #happiest words
-head(ANEW[order(ANEW$score),], 20) #saddest words
+  #ANEW
+    ANEW = read.csv(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/ANEW.csv", header = FALSE)
+    colnames(ANEW) = c("word", "score")
+    #ANEW$score = ANEW$score-(mean(ANEW$score)+1) #normalize ANEW scores to 0. This didn't work as well as the next line did.
+    ANEW$score = ANEW$score - 5
+    range(ANEW$score)
+    head(ANEW[order(-ANEW$score),], 20) #happiest words
+    head(ANEW[order(ANEW$score),], 20) #saddest words
+
+  #EmoLex
+    emolex = read.csv(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/EmoLex/NRC-emotion-lexicon-wordlevel-alphabetized-v0.92.txt",
+                      sep = "\t", header = FALSE)
+    colnames(emolex) = c("word", "emotion", "indicator")
+    emolex = emolex[emolex$emotion == "negative"|emolex$emotion == "positive",]
+    emolex = emolex[emolex$indicator == 1,]
+    emolex[emolex$emotion == "negative",]$indicator = -1
+    emolex = emolex[c("word", "indicator")]
+    colnames(emolex) = c("word", "score")
+
+  #Wiebe
+    Wiebe_lexicon = read.csv(system.file("data/subjectivity.csv.gz", 
+                                         package = "sentiment"), header = FALSE, stringsAsFactors = FALSE)
+    #write.csv(Wiebe_lexicon, file = "Wiebe_lexicon.csv")
+    Wiebe_lexicon = as.data.frame(cbind(as.character(Wiebe_lexicon$V1), as.integer(2*(Wiebe_lexicon$V3 == "positive")-1)))
+    colnames(Wiebe_lexicon) = c("word", "score")
+    Wiebe_lexicon$score = as.integer(Wiebe_lexicon$score)
+    Wiebe_lexicon$score = (((Wiebe_lexicon$score-1)*2)-1)*-1
+
+    #looking up Wiebe words
+    Wiebe_lexicon[Wiebe_lexicon$score == -1,]
+    Wiebe_lexicon[pmatch("asu", Wiebe_lexicon$word),] #the word "asu" matches "asunder" and gets a score of -1!!!
+    Wiebe_lexicon[pmatch("you", Wiebe_lexicon$word),] 
 
 
+  #AFINN
+    AFINN_lexicon = read.delim(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/AFINN/AFINN-111.txt", stringsAsFactors = FALSE)
+    colnames(AFINN_lexicon) = c("word", "score")
 
-#EmoLex
-emolex = read.csv(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/EmoLex/NRC-emotion-lexicon-wordlevel-alphabetized-v0.92.txt", 
-                   sep = "\t", header = FALSE)
-colnames(emolex) = c("word", "emotion", "indicator")
-emolex = emolex[emolex$emotion == "negative"|emolex$emotion == "positive",]
-emolex = emolex[emolex$indicator == 1,]
-emolex[emolex$emotion == "negative",]$indicator = -1
-emolex = emolex[c("word", "indicator")]
-colnames(emolex) = c("word", "score")
+    #looking up AFINN words
+    AFINN_lexicon[AFINN_lexicon$score == -5,]
+    AFINN_lexicon[pmatch("am", AFINN_lexicon$word),2]
+    AFINN_lexicon[pmatch("feeling", AFINN_lexicon$word),2]
+    AFINN_lexicon[pmatch("creaking", AFINN_lexicon$word),2]
+    AFINN_lexicon[pmatch("plague", AFINN_lexicon$word),2]
 
-#Wiebe
-Wiebe_lexicon = read.csv(system.file("data/subjectivity.csv.gz", 
-                                     package = "sentiment"), header = FALSE, stringsAsFactors = FALSE)
-Wiebe_lexicon = as.data.frame(cbind(as.character(Wiebe_lexicon$V1), as.integer(2*(Wiebe_lexicon$V3 == "positive")-1)))
-colnames(Wiebe_lexicon) = c("word", "score")
-Wiebe_lexicon$score = as.integer(Wiebe_lexicon$score)
-Wiebe_lexicon$score = (((Wiebe_lexicon$score-1)*2)-1)*-1
+  #Negation Lexicon
+    negations = c("no", "not","none","nobody","nothing","neither","never","doesnt","isnt","wasnt","shouldnt","wouldnt", "couldnt","wont","cant","dont")
 
-#looking up Wiebe words
-Wiebe_lexicon[Wiebe_lexicon$score == -1,]
-Wiebe_lexicon[pmatch("asu", Wiebe_lexicon$word),] #the word "asu" matches "asunder" and gets a score of -1!!!
-Wiebe_lexicon[pmatch("you", Wiebe_lexicon$word),] 
+# Import 2014 ComtweetsLA.csv target data ----
 
-
-#AFINN
-AFINN_lexicon = read.delim(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/AFINN/AFINN-111.txt", stringsAsFactors = FALSE)
-colnames(AFINN_lexicon) = c("word", "score")
-
-#looking up AFINN words
-AFINN_lexicon[AFINN_lexicon$score == -5,]
-AFINN_lexicon[pmatch("am", AFINN_lexicon$word),2]
-AFINN_lexicon[pmatch("feeling", AFINN_lexicon$word),2]
-AFINN_lexicon[pmatch("creaking", AFINN_lexicon$word),2]
-AFINN_lexicon[pmatch("plague", AFINN_lexicon$word),2]
-
-#Negation Lexicon
-negations = c("no", "not","none","nobody","nothing","neither","never","doesnt","isnt","wasnt","shouldnt","wouldnt", "couldnt","wont","cant","dont")
-
-# Import data ----
-
-# read in ComTweetsLA.csv in +- 2 mins:
-x = read.csv(file = "~/Desktop/Huang Research/Rsentiment/ComTweetsLA.csv", nrows = 100, header = TRUE, colClasses = 
-               c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
+  # read in ComTweetsLA.csv in +- 2 mins:
+    x = read.csv(file = "~/Desktop/Huang Research/Rsentiment/ComTweetsLA.csv", nrows = 100, header = TRUE, colClasses = 
+                   c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
 
 # clean.data ----
 clean.data = function(documents){
@@ -139,7 +138,7 @@ classify.sentiment = function(documents, lexicon = AFINN_lexicon){
   return(sentscorevec)
 }
 
-# classify.sentiment2 ----
+# classify.sentiment2 (modelled after Crawford's code. This didn't work as well as the original classify.sentiment and is not included in functions.R) ----
 classify.sentiment2 = function(documents, lexicon = AFINN_lexicon){
   require(stringr)
   sentscorevec = laply(documents, function(documents, lex = lexicon)
@@ -188,52 +187,52 @@ cbind(testdocs,classify.sentiment(testdocs, Wiebe_lexicon), classify.sentiment(t
 
 # clean.analyze.write ----
 
-# Import x
-a = Sys.time()
-print(a)
-x = read.csv(file = "~/Desktop/Huang Research/Rsentiment/ComTweetsLA.csv", skip = 6000000, nrows = 3400000, header = FALSE, colClasses = 
-               c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
-colnames(x) = c("text","username","tweet_id","lat","long","year","month","date","hour","minute","second")
+  # Import x
+    a = Sys.time()
+    print(a)
+    x = read.csv(file = "~/Desktop/Huang Research/Rsentiment/ComTweetsLA.csv", skip = 6000000, nrows = 3400000, header = FALSE, colClasses = 
+                   c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
+    colnames(x) = c("text","username","tweet_id","lat","long","year","month","date","hour","minute","second")
 
-# clean x
-x[,"text"] = clean.data(x$text)
+  # clean x
+    x[,"text"] = clean.data(x$text)
 
-# remove empty rows
-x = x[nchar(x$text)>2,]
+  # remove empty rows
+    x = x[nchar(x$text)>2,]
 
-# Wiebe sentiment 
-x[,"Wiebe.sentiment"] = classify.sentiment(x$text, lexicon = Wiebe_lexicon)
+  # Wiebe sentiment - OBSOLETE
+  #  x[,"Wiebe.sentiment"] = classify.sentiment(x$text, lexicon = Wiebe_lexicon)
 
-# AFINN sentiment
-x[,"AFINN.sentiment"] = classify.sentiment(x$text, lexicon = AFINN_lexicon)
+  # AFINN sentiment
+    x[,"AFINN.sentiment"] = classify.sentiment(x$text, lexicon = AFINN_lexicon)
 
-# AFINN sentiment2 
-x[,"AFINN.sentiment2"] = classify.sentiment2(x$text, lexicon = AFINN_lexicon)
+  # AFINN sentiment2 - OBSOLETE
+  #  x[,"AFINN.sentiment2"] = classify.sentiment2(x$text, lexicon = AFINN_lexicon)
 
-#Skip rerunning Wiebe through sentiment2 because it's not as good and will run slower
-dim(x) # text now has 15 columns, 4 more than before
-head(x)
+  #Skip rerunning Wiebe through sentiment2 because it's not as good and will run slower
+    dim(x) # text now has 15 columns, 4 more than before
+    head(x)
 
-# write table
-#write.table(x, file = "~/Desktop/Huang Research/Rsentiment/latweets.sentiment2.csv", row.names = FALSE, sep = ",")
-# append table
-write.table(x, file = "~/Desktop/Huang Research/Rsentiment/latweets.sentiment2.csv", col.names = FALSE, append = TRUE)
+  # write table
+    #write.table(x, file = "~/Desktop/Huang Research/Rsentiment/latweets.sentiment2.csv", row.names = FALSE, sep = ",")
+    # append table
+    write.table(x, file = "~/Desktop/Huang Research/Rsentiment/latweets.sentiment2.csv", col.names = FALSE, append = TRUE)
 
-rm(x)
+  rm(x)
 
-print(Sys.time() - a)
+  print(Sys.time() - a)
 
-# read data back into R ----
-y = read.csv(file = "~/Desktop/Huang Research/Rsentiment/latweets.sentiment2.csv", skip = 0, nrows = 2000, header = TRUE, 
-             colClasses = c("character", "character", "character", "numeric", "numeric", "integer", 
-                            "integer", "integer", "integer", "integer", "integer", "integer", "integer"))
+  # read data back into R ----
+    y = read.csv(file = "~/Desktop/Huang Research/Rsentiment/latweets.sentiment2.csv", skip = 0, nrows = 2000, header = TRUE, 
+                 colClasses = c("character", "character", "character", "numeric", "numeric", "integer", 
+                                "integer", "integer", "integer", "integer", "integer", "integer", "integer"))
 
-# Sample 100
-set.seed(100)
-idx = sample(nrow(y), 100)
-y.sample = y[idx,c("text", "username", "Wiebe.sentiment", "AFINN.sentiment")]
+  # Sample 100
+  set.seed(100)
+  idx = sample(nrow(y), 100)
+  y.sample = y[idx,c("text", "username", "Wiebe.sentiment", "AFINN.sentiment")]
 
-# sanity tests ----
+# Check scores ----
 dim(y) #8859604 rows
 range(y$AFINN.sentiment) # -135  88
 range(y$Wiebe.sentiment) # -29   44
