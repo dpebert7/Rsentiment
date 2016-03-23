@@ -21,8 +21,19 @@
 
 #lexicons MUST be formatted so that the first column lists words and the second column gives the sentiment score of that word.
 
+#ANEW
+ANEW = read.csv(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/ANEW.csv", header = FALSE)
+colnames(ANEW) = c("word", "score")
+#ANEW$score = ANEW$score-(mean(ANEW$score)+1) #normalize ANEW scores to 0
+ANEW$score = ANEW$score - 5
+range(ANEW$score)
+head(ANEW[order(-ANEW$score),], 20) #happiest words
+head(ANEW[order(ANEW$score),], 20) #saddest words
+
+
+
 #EmoLex
-emolex2 = read.csv(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/EmoLex/NRC-emotion-lexicon-wordlevel-alphabetized-v0.92.txt", 
+emolex = read.csv(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/EmoLex/NRC-emotion-lexicon-wordlevel-alphabetized-v0.92.txt", 
                    sep = "\t", header = FALSE)
 colnames(emolex) = c("word", "emotion", "indicator")
 emolex = emolex[emolex$emotion == "negative"|emolex$emotion == "positive",]

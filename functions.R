@@ -18,7 +18,7 @@ clean.data = function(documents){
     #documents<-gsub("n't", " not", documents) #replace contractions ending in n't with not. Might be better for Bayes to not use this.
     documents<-rm_url(documents, replacement = "url") #tokenize urls
     documents<-gsub("RT", "retweet", documents) # tokenize retweets
-    documents<-gsub("@\\w+", "username", documents) #tokenize @
+    #documents<-gsub("@\\w+", "username", documents) #tokenize @
     documents<-gsub("#\\w+", "hash", documents) #tokenize #. Not necessary for tweets that haven't been classified yet.
     documents<-gsub("[[:punct:]]", "", documents) #remove punctuation
     documents<-gsub("[[:digit:]]", "", documents) #remove numbers
