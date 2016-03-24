@@ -71,9 +71,9 @@
 
 # Import 2014 ComtweetsLA.csv target data ----
 
-  # read in ComTweetsLA.csv in +- 2 mins:
-    x = read.csv(file = "~/Desktop/Huang Research/Rsentiment/ComTweetsLA.csv", nrows = 100, header = TRUE, colClasses = 
-                   c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
+  # read in ComTweetsLA.csv in +- 30 secs:
+    load("~/Desktop/Huang Research/Rsentiment/comTweetsLA.RData") # load LA2014 into memory as x
+    
 
 # clean.data ----
 clean.data = function(documents){
@@ -222,7 +222,7 @@ cbind(testdocs,classify.sentiment(testdocs, Wiebe_lexicon), classify.sentiment(t
 
   print(Sys.time() - a)
 
-  # read data back into R ----
+# read data back into R ----
     y = read.csv(file = "~/Desktop/Huang Research/Rsentiment/latweets.sentiment2.csv", skip = 0, nrows = 2000, header = TRUE, 
                  colClasses = c("character", "character", "character", "numeric", "numeric", "integer", 
                                 "integer", "integer", "integer", "integer", "integer", "integer", "integer"))

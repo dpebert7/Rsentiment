@@ -16,8 +16,8 @@ source("functions.R") #get cleaning function, AFINN_lexicon
 # PRELIMINARIES ---- 
 
   # TARGET DATA: 9.4 million tweets from LA county in 2014
-    target = read.csv(file = "~/Desktop/Huang Research/Rsentiment/ComTweetsLA.csv", nrows = 9400000, header = TRUE, colClasses = 
-                   c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
+    load("~/Desktop/Huang Research/Rsentiment/comTweetsLA.RData") # load LA2014 into memory as x
+
 
   # TRAINING DATA: semisuper tweets from LA county in 2014 
     happy = read.csv(file = "~/Desktop/Huang Research/Rsentiment/happy_tweets_2014", nrows = 110000, header = TRUE, colClasses = 

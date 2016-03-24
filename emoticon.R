@@ -1,13 +1,13 @@
 # David Ebert
 # 21 March 2016
 # GOAL: Create a semi-supervised training set from within comtweetsLA
+# 
 
 # READ IN DATA ComTweetsLA.csv in +- 2 mins ----
-  x = read.csv(file = "~/Desktop/Huang Research/Rsentiment/ComTweetsLA.csv", nrows = 9400000, header = TRUE, colClasses = 
-                c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
+  load("~/Desktop/Huang Research/Rsentiment/comTweetsLA.RData") # load LA2014 into memory as x
 
 # HAPPY EMOTICONS ----
-  happy_emoticons = c(":)", "(:", ":-)", "(-:", ":D", ":-D", "=)", "(=", "☺", "☻")
+  happy_emoticons = c("\\:\\)" , "\\(\\:", "\\:-\\)", "\\(-\\:", "\\:D", "\\:-D", "=\\)", "\\(=", "☺", "☻")
 
   grep("\\:\\)", x$text, value = TRUE) #67189 :)'s in the whole set. Takes about 11 sec. to run
   grep("\\(\\:", x$text, value = TRUE) #14401 (:'s in the whole set. 
@@ -20,7 +20,11 @@
   grep("☺", x$text, value = TRUE) #38441 of them in the whole set
   grep("☻", x$text, value = TRUE) #130 these in the whole set
   grep("☀", x$text, value = TRUE) #7754 of these in the whole set. Leave these out, though
-
+  
+  #grep everything all at once
+  happy_indices2 = grep(paste(happy_emoticons, collapse = "|"),x$text, value = FALSE)
+  #This has length 147400, 224 rows longer than expected
+  
   happy_indices = c(
     grep("\\:\\)", x$text, value = FALSE),
     grep("\\(\\:", x$text, value = FALSE),
@@ -44,8 +48,10 @@
   rm(x)
   #reload x after this part. Sorry about the inconvenience :(
 
+
+  
 # SAD EMOTICONS ----
-  happy_emoticons = c(":(", ":-(", "):", ")-:", ":[", "]:", ":{", "}:","=(", ")=", "☹")
+  sad_emoticons = c("\\:\\(", "\\:-\\(", "\\)\\:", "\\)-\\:", ":\\[", "\\]:", ":\\{", "\\}:","=\\(", "\\)=", "☹")
 
   grep("\\:\\(", x$text, value = TRUE) #40065 :('s in the whole set. 
   grep("\\:-\\(", x$text, value = TRUE) #3485 :-('s in the whole set. 
@@ -59,6 +65,9 @@
   grep("\\)=", x$text, value = TRUE) #59 )='s in the whole set
   grep("☹", x$text, value = TRUE) #222 of these in the whole set
 
+  #grep everything all at once
+  sad_indices2 = grep(paste(sad_emoticons, collapse = "|"),x$text, value = FALSE)
+  #This has length 52498, 251 rows longer than expected
   
   sad_indices = c(
     grep("\\:\\(", x$text, value = FALSE),
