@@ -7,8 +7,6 @@
   load("~/Desktop/Huang Research/Rsentiment/comTweetsLA.RData") # load LA2014 into memory as x
 
 # HAPPY EMOTICONS ----
-  happy_emoticons = c("\\:\\)" , "\\(\\:", "\\:-\\)", "\\(-\\:", "\\:D", "\\:-D", "=\\)", "\\(=", "☺", "☻")
-
   grep("\\:\\)", x$text, value = TRUE) #67189 :)'s in the whole set. Takes about 11 sec. to run
   grep("\\(\\:", x$text, value = TRUE) #14401 (:'s in the whole set. 
   grep("\\:-\\)", x$text, value = TRUE) #14069 :-)'s in the whole set. 
@@ -21,27 +19,13 @@
   grep("☻", x$text, value = TRUE) #130 these in the whole set
   grep("☀", x$text, value = TRUE) #7754 of these in the whole set. Leave these out, though
   
-  #grep everything all at once
-  happy_indices2 = grep(paste(happy_emoticons, collapse = "|"),x$text, value = FALSE)
-  #This has length 147400, 224 rows longer than expected
+  happy_emoticons = c("\\:\\)" , "\\(\\:", "\\:-\\)", "\\(-\\:", "\\:D", "\\:-D", "=\\)", "\\(=", "☺", "☻")
   
-  happy_indices = c(
-    grep("\\:\\)", x$text, value = FALSE),
-    grep("\\(\\:", x$text, value = FALSE),
-    grep("\\:-\\)", x$text, value = FALSE),
-    grep("\\(-\\:", x$text, value = FALSE),
-    grep("\\:D", x$text, value = FALSE),
-    grep("\\:-D", x$text, value = FALSE),
-    grep("=\\)", x$text, value = FALSE),
-    grep("\\(=", x$text, value = FALSE),
-    grep("☺", x$text, value = FALSE),
-    grep("☻", x$text, value = TRUE)
-  )
+  #grep everything all at once
+  happy_indices = grep(paste(happy_emoticons, collapse = "|"),x$text, value = FALSE)
 
-  length(happy_indices) #happy_indices has length 148000
-  dim(x[happy_indices[duplicated(happy_indices)],]) #698 entries have multiple distinct happy emoticons
-  dim(unique(x[happy_indices,])) #There are 147176 unique happy rows
-  x = unique(x[happy_indices,]) #Rewrite over x to avoid memory problems
+  length(happy_indices) #happy_indices has length 147400
+  x = x[happy_indices,] #Rewrite over x to avoid memory problems
   dim(x) # Looks good
   write.csv(x,file = "~/Desktop/Huang Research/Rsentiment/happy_tweets_2014", row.names = FALSE)
 
@@ -51,8 +35,6 @@
 
   
 # SAD EMOTICONS ----
-  sad_emoticons = c("\\:\\(", "\\:-\\(", "\\)\\:", "\\)-\\:", ":\\[", "\\]:", ":\\{", "\\}:","=\\(", "\\)=", "☹")
-
   grep("\\:\\(", x$text, value = TRUE) #40065 :('s in the whole set. 
   grep("\\:-\\(", x$text, value = TRUE) #3485 :-('s in the whole set. 
   grep("\\)\\:", x$text, value = TRUE) #5489 ):'s in the whole set. 
@@ -64,29 +46,14 @@
   grep("=\\(", x$text, value = TRUE) #131 =('s in the whole set
   grep("\\)=", x$text, value = TRUE) #59 )='s in the whole set
   grep("☹", x$text, value = TRUE) #222 of these in the whole set
-
-  #grep everything all at once
-  sad_indices2 = grep(paste(sad_emoticons, collapse = "|"),x$text, value = FALSE)
-  #This has length 52498, 251 rows longer than expected
   
-  sad_indices = c(
-    grep("\\:\\(", x$text, value = FALSE),
-    grep("\\:-\\(", x$text, value = FALSE),
-    grep("\\)\\:", x$text, value = FALSE),
-    grep("\\)-\\:", x$text, value = FALSE),
-    grep(":\\[", x$text, value = FALSE),
-    grep("\\]:", x$text, value = FALSE),
-    grep(":\\{", x$text, value = FALSE),
-    grep("\\}:", x$text, value = FALSE),
-    grep("=\\(", x$text, value = FALSE),
-    grep("\\)=", x$text, value = FALSE),
-    grep("☹️", x$text, value = FALSE) #It appears twitter works with unicode characters. Not necessarily emoji
-  )
+  sad_emoticons = c("\\:\\(", "\\:-\\(", "\\)\\:", "\\)-\\:", ":\\[", "\\]:", ":\\{", "\\}:","=\\(", "\\)=", "☹")
+  
+  #grep everything all at once
+  sad_indices = grep(paste(sad_emoticons, collapse = "|"),x$text, value = FALSE)
 
-  length(sad_indices) #sad_indices has length 52347
-  dim(x[sad_indices[duplicated(sad_indices)],]) #100 entries have multiple distinct sad emoticons
-  dim(unique(x[sad_indices,])) #There are 52247 unique sad rows
-  x = unique(x[sad_indices,]) #Write over x to avoid memory problems
+  length(sad_indices) #sad_indices has length 52498
+  x = x[sad_indices,] #Write over x to avoid memory problems
   dim(x) # Looks good
   write.csv(x,file = "~/Desktop/Huang Research/Rsentiment/sad_tweets_2014", row.names = FALSE)
   
@@ -108,8 +75,8 @@
   
   #clean tweets 
   # Note that tokenization was turned off for this step to avoid getting a hunge "USERNAME" in the middle of the 
-  happy_tweets$clean = clean.data(happy_tweets$text)
-  sad_tweets$clean = clean.data(sad_tweets$text)
+  happy_tweets$clean = clean.tweets(happy_tweets$text, usernameToken = "", hashToken = "")
+  sad_tweets$clean = clean.tweets(sad_tweets$text, usernameToken = "", hashToken = "")
 
   #Create corpus using tm package
   happy_corpus = Corpus(VectorSource(happy_tweets$clean))
