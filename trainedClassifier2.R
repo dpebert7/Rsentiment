@@ -130,6 +130,7 @@ head(freq.all$word)
 freq.all$word = as.character(freq.all$word)
 head(freq.all$word)
 
+
 # Term Frequencies and tfidf with NDSI ----
 
 #AFINN Frequency Function (now used with ndsi lexicon)
@@ -152,14 +153,6 @@ range(inv.doc.freq)
 tf.idf = term.freq %*% diag(inv.doc.freq)
 
 
-#rpart tree (runs faster)
-library(rpart)
-tree = rpart(polarity~., data = rf.semisuper)
-
-pred.sentiment=predict(tree,
-                       newdata=)
-
-confusionMatrix(pred.sentiment,semisuper$sentiment)
 
 # Random Forest Using NDSI tf.idf ----
 semisuper$polarity=as.factor(semisuper$polarity)
@@ -174,6 +167,7 @@ pred.sentiment=predict(rf.model,
                        newdata=rf.movie.data[-train,])
 
 confusionMatrix(pred.sentiment,semisuper$sentiment[-train])
+
 
 
 #ROC Curve

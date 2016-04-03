@@ -2,14 +2,7 @@
 #21 March 2016
 #Data Mining Homework 24
 
-# libraries ----
-library(stringr) #library for str_count function
-library(e1071) # for naive bayes model
-library(ggplot2) #for graphs
-library(caret) #for confusionMatrix
-library(pROC) #ROC curves
-library(randomForest)
-library(tm) # for building term frequency matrix from corpus
+# libraries, functions, and directory ----
 source("functions.R") #get cleaning function, AFINN_lexicon
 
 
@@ -18,38 +11,10 @@ source("functions.R") #get cleaning function, AFINN_lexicon
   # TARGET DATA: 9.4 million tweets from LA county in 2014
     load("~/Desktop/Huang Research/Rsentiment/comTweetsLA.RData") # load LA2014 into memory as x
 
+  # EMOTICON (TRAINING) DATA: semisuper tweets from LA county in 2014 
+    load("~/Desktop/Huang Research/Rsentiment/emoticon.RData") # load train/emoticon into memory as emoticon
 
-  # TRAINING DATA: semisuper tweets from LA county in 2014 
-    happy = read.csv(file = "~/Desktop/Huang Research/Rsentiment/happy_tweets_2014", nrows = 110000, header = TRUE, colClasses = 
-                     c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
-
-    sad = read.csv(file = "~/Desktop/Huang Research/Rsentiment/sad_tweets_2014", nrows = 50000, header = TRUE, colClasses = 
-                   c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
-
-    # Clean tweets, remove blank tweets, then undersample from happy so that happy has as many tweets as sad does.
-    happy$text = clean.data(happy$text)
-    sad$text = clean.data(sad$text)
-
-    happy  = happy[happy$text!="",]
-    sad  = sad[sad$text!="",]
-
-    set.seed(127)
-    index = sample(nrow(happy),nrow(sad))
-    happy = happy[index,]
-    dim(happy)
-    dim(sad) #both should have 48124 rows
-
-
-    # Initialize polarity of happy and sad tweets
-    happy$polarity = as.factor(1)
-    sad$polarity = as.factor(0)
-    train = rbind(as.data.frame(happy[,c("text", "polarity")]),sad[,c("text", "polarity")]) 
-    colnames(train) = c("clean", "polarity") #note that cleaning already took place, so these column names are appropriate
-    dim(train)
-    table(train$polarity)
-
-
-  # VALIDATION DATA: sentiment140
+  # TEST/VALIDATION DATA: sentiment140
     test = read.csv("testdata.manual.2009.06.14.csv", header = FALSE, colClasses = 
                       c("character", "character", "character", "character", "character", "character"))
     colnames(test) = c("polarity", "not_sure", "created_at", "search_query", "username", "text")
@@ -60,7 +25,7 @@ source("functions.R") #get cleaning function, AFINN_lexicon
   
     test = test[test$polarity !=2, c("polarity", "text")]
     test$polarity = as.factor(test$polarity)
-    test$clean = clean.data(test$text)
+    test$clean = clean.tweets(test$text)
 
     
   # Calculate AFINN scores for train and test using Crawford's method
@@ -193,6 +158,7 @@ source("functions.R") #get cleaning function, AFINN_lexicon
       f1 = (2*precision*recall)/(precision + recall) # 51.36% 
     
     
+
 # MODELS INVOLVING AFINN SCORE (using only test data) ----
   a = Sys.time()
   term.freq <- t(apply(t(test$clean), 2, AFINN_lexicon.frequencies))
@@ -211,13 +177,74 @@ source("functions.R") #get cleaning function, AFINN_lexicon
   nb.model = naiveBayes(polarity ~ AFINN.rating, data = train)
 
 # B BAG OF WORDS (random forest using term frequencies) ----
-  # Make a lexicon from the training data
   
-  
-  # Apply lexicon 
+  # Lexicon from the training (emoticon) data
+    load("~/Desktop/Huang Research/Rsentiment/emoticon.RData") # load train/emoticon into memory as emoticon
+    table(emoticon$polarity)
 
+    load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
+    head(freq.all)
+    
+    #T load tf.idf created by emoticon.R
+    load(paste(storage.directory,"tf.idf.RData", sep = "")) # load tf.idf lexicon into memory as tf.idf
+    
+    # load emoticon.tf.idf created by emoticon.R
+    load(paste(storage.directory,"emoticon.tf.idf.RData", sep = "")) # load emoticon.tf.idf lexicon into memory as tf.idf
+    
+    
+  # Build a model using emoticon data and new dictionary
+    # rpart tree (about 5 minutes to run, even for lots of data) 
+    a = Sys.time()
+    tree.model = rpart(polarity~., data = emoticon.tf.idf)
+    Sys.time()-a
+    
+    pred.sentiment = predict(tree.model, newdata = emoticon.tf.idf, type = "class")
+    confusionMatrix(pred.sentiment,emoticon$polarity) #accuracy is only 60%
+    
+    #ROC curve
+    phat=predict(tree.model,
+                 newdata = emoticon.tf.idf,
+                 type = "prob")
+    plot(roc(emoticon$polarity,phat[,2]))  #BLEH. Not great
+    
+    
+    # SVM (SLOW: Takes hours to run)
+    a = Sys.time()
+    svm.model=svm(polarity~.,data = emoticon.tf.idf[1:10,])
+    Sys.time()-a
+    
+    pred.sentiment=predict(rf.model, newdata = emoticon.tf.idf)
+    confusionMatrix(pred.sentiment,emoticon$polarity)
+    
+    phat=predict(rf.model,
+                 newdata = emoticon.tf.idf,
+                 type = "prob")
+    plot(roc(emoticon$polarity,phat[,2]))
+    
+    
+    # Random Forest (SLOW: Takes hours to run)
+    a = Sys.time()
+    rf.model=randomForest(polarity~.,data = emoticon.tf.idf)
+    Sys.time()-a
+    
+    pred.sentiment=predict(rf.model, newdata = emoticon.tf.idf)
+    confusionMatrix(pred.sentiment,emoticon$polarity)
+    
+    phat=predict(rf.model,
+                 newdata = emoticon.tf.idf,
+                 type = "prob")
+    plot(roc(emoticon$polarity,phat[,2]))
+    
+    
+    
+  # Apply lexicon and random forest to test (sent140 data)
+    
+  
+  
+  
 # C TFIDF (random forest using term frequencies) ----
 
+  
 # D NORMALIZED SENTIMENT DIFFERENCE INDEX----
   print("hello world")
   

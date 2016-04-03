@@ -1,7 +1,20 @@
 #Ebert/Rider
 #Updated 23 March 2016
 
-#useful functions for other scripts
+
+# Storage directory for loading R objects
+storage.directory = "~/Desktop/Huang Research/Rsentiment/"
+
+# Load libraries for other scripts
+library(stringr) #library for str_count function
+library(e1071) # for naive bayes model
+library(ggplot2) #for graphs
+library(caret) #for confusionMatrix
+library(pROC) #ROC curves
+library(randomForest)
+library(rpart)
+library(tm) # for building term frequency matrix from corpus
+
 
 #AFINN_lexicon
   AFINN_lexicon = read.delim(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/AFINN/AFINN-111.txt", stringsAsFactors = FALSE, header = F, quote = '')
@@ -10,7 +23,11 @@
   AFINN_lexicon$word.clean <- gsub("[[:punct:]]", '', AFINN_lexicon$word.clean)  #Removing punctuation
 
 
-clean.tweets = function(documents, usernameToken = "username", hashToken = "hash "){
+clean.tweets = function(documents, 
+                        usernameToken = "usernametoken", 
+                        hashToken = " hashtoken ", 
+                        happyToken = " happytoken ", 
+                        sadToken = " sadtoken "){
   happy_emoticons = c("\\:\\)" , "\\(\\:", "\\:-\\)", "\\(-\\:", "\\:D", "\\:-D", "=\\)", "\\(=", "☺", "☻")
   sad_emoticons = c("\\:\\(", "\\:-\\(", "\\)\\:", "\\)-\\:", ":\\[", "\\]:", ":\\{", "\\}:","=\\(", "\\)=", "☹")
   require(plyr)
@@ -22,8 +39,8 @@ clean.tweets = function(documents, usernameToken = "username", hashToken = "hash
     documents = rm_url(documents) #tokenize urls
     documents = gsub("@\\w+", usernameToken, documents) #tokenize @
     documents = gsub("\\#", hashToken, documents) #tokenize #. Not necessary for tweets that haven't been classified yet.
-    documents = gsub(paste(sad_emoticons, collapse = "|"), " sademoticon ", documents) #tokenize sad emoticons
-    documents = gsub(paste(happy_emoticons, collapse = "|"), " happyemoticon ", documents) #tokenize happy emoticons
+    documents = gsub(paste(happy_emoticons, collapse = "|"), happyToken, documents) #tokenize happy emoticons
+    documents = gsub(paste(sad_emoticons, collapse = "|"), sadToken, documents) #tokenize sad emoticons
     documents = gsub("[[:punct:]]", "", documents) #remove punctuation
     documents = gsub("[[:digit:]]", "", documents) #remove numbers
     documents = gsub("[^a-zA-Z]", " ", documents) #remove everything that isn't a letter
