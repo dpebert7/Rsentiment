@@ -2,7 +2,7 @@
 #21 March 2016
 #Data Mining Homework 24
 
-# libraries, functions, and directory ----
+# libraries, functions, and directory, cleaning function , AFINN_lexicon, etc----
 source("functions.R") #get cleaning function, AFINN_lexicon
 
 
@@ -210,10 +210,10 @@ source("functions.R") #get cleaning function, AFINN_lexicon
     
     # SVM (SLOW: Takes hours to run)
     a = Sys.time()
-    svm.model=svm(polarity~.,data = emoticon.tf.idf[1:10,])
+    svm.model=svm(polarity~.,data = emoticon.tf.idf[c(1:10,70000:70010),]) #NOT SURE WHY THIS WON'T WORK
     Sys.time()-a
     
-    pred.sentiment=predict(rf.model, newdata = emoticon.tf.idf)
+    pred.sentiment=predict(rf.model, newdata = emoticon.tf.idf[])
     confusionMatrix(pred.sentiment,emoticon$polarity)
     
     phat=predict(rf.model,
@@ -222,7 +222,7 @@ source("functions.R") #get cleaning function, AFINN_lexicon
     plot(roc(emoticon$polarity,phat[,2]))
     
     
-    # Random Forest (SLOW: Takes hours to run)
+    # Random Forest (SLOW: Takes MANY HOURS to run)
     a = Sys.time()
     rf.model=randomForest(polarity~.,data = emoticon.tf.idf)
     Sys.time()-a
