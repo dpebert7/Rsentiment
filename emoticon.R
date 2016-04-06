@@ -185,6 +185,7 @@
   load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
 
   
+  
 # Build tf.idf model using emoticon data and new dictionary ----
   
   #Restrict term.freq to words with higher ndsi scores
@@ -208,8 +209,6 @@
   
   save(tf.idf, file = paste(storage.directory,"tf.idf.RData", sep = "")) # save tf.idf lexicon into memory as tf.idf
   load(paste(storage.directory,"tf.idf.RData", sep = "")) # load tf.idf lexicon into memory as tf.idf
-
-
 
 # Random Forest Using NDSI tf.idf ----
   emoticon.tf.idf = data.frame(polarity=emoticon$polarity,tf.idf)
