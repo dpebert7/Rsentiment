@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #Ebert/Rider
 #Updated 23 March 2016
 
@@ -104,7 +103,7 @@ classify.sentiment = function(documents, lexicon = AFINN_lexicon){
   }, .progress = "text")
   return(sentscorevec)
 }
-=======
+
 # Additional functions
 
 confmatrix=function(y,predy){
@@ -119,4 +118,3 @@ rand.which.max=function(x){
   index=((1:length(x))[x==(max(x))])
   return(sample(c(index,index),1))
 }
->>>>>>> 2d34ac832f7295638b4434e8cfff5fcaa3c724a5

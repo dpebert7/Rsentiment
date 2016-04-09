@@ -190,37 +190,58 @@ source("functions.R") #get cleaning function, AFINN_lexicon
     
     # load emoticon.tf.idf created by emoticon.R
     load(paste(storage.directory,"emoticon.tf.idf.RData", sep = "")) # load emoticon.tf.idf lexicon into memory as tf.idf
+    # emoticon.tf.idf = emoticon.tf.idf[50001:(nrow(emoticon.tf.idf)-50000),] # remaining tweets
+    emoticon.tf.idf = (rbind(head(emoticon.tf.idf,50000), tail(emoticon.tf.idf,50000))) #reduce to 100000
     
+    # Reduce emoticon.tf.idf to make models run more quickly
+    nTraining = 25000
+    emoticon.tf.idf = (rbind(head(emoticon.tf.idf,nTraining), tail(emoticon.tf.idf,nTraining))) #training data
+    emoticon.tf.idf = emoticon.tf.idf[c((nTraining+1):50000,50001:(100000-(nTraining))),] #test data
     
   # Build a model using emoticon data and new dictionary
-    # rpart tree (about 5 minutes to run, even for lots of data) 
+    # rpart tree (<10 minutes to run, even for lots of data) 
     a = Sys.time()
     tree.model = rpart(polarity~., data = emoticon.tf.idf)
     Sys.time()-a
     
     pred.sentiment = predict(tree.model, newdata = emoticon.tf.idf, type = "class")
-    confusionMatrix(pred.sentiment,emoticon$polarity) #accuracy is only 60%
+    confusionMatrix(pred.sentiment,emoticon.tf.idf$polarity) #accuracy is only 60%
     
     #ROC curve
     phat=predict(tree.model,
                  newdata = emoticon.tf.idf,
                  type = "prob")
-    plot(roc(emoticon$polarity,phat[,2]))  #BLEH. Not great
+    plot(roc(emoticon.tf.idf$polarity,phat[,2]))  #BLEH. Not great
     
     
-    # SVM (SLOW: Takes hours to run)
+    # Naive Bayes (Fast model; slow classification)
+    nb.model=naiveBayes(polarity~.,data = emoticon.tf.idf)
+    
     a = Sys.time()
-    svm.model=svm(polarity~.,data = emoticon.tf.idf[c(1:10,70000:70010),]) #NOT SURE WHY THIS WON'T WORK
+    pred.sentiment=predict(nb.model, newdata = emoticon.tf.idf)
+    confusionMatrix(pred.sentiment,emoticon.tf.idf$polarity)
     Sys.time()-a
     
-    pred.sentiment=predict(rf.model, newdata = emoticon.tf.idf[])
-    confusionMatrix(pred.sentiment,emoticon$polarity)
-    
-    phat=predict(rf.model,
+    phat=predict(nb.model,
                  newdata = emoticon.tf.idf,
-                 type = "prob")
-    plot(roc(emoticon$polarity,phat[,2]))
+                 type = "raw")
+    plot(roc(emoticon.tf.idf$polarity,phat[,2]))
     
+    
+    # SVM
+    a = Sys.time()
+    svm.model=svm(polarity~.,data = emoticon.tf.idf)
+    Sys.time()-a
+    
+    pred.sentiment=predict(svm.model, newdata = emoticon.tf.idf)
+    confusionMatrix(pred.sentiment, emoticon.tf.idf$polarity)
+    
+    phat=predict(svm.model,
+                 newdata = emoticon.tf.idf,
+                 type = "raw")  #not sure what the correct type is
+    plot(roc(emoticon.tf.idf$polarity, phat[,2]))
+    
+    save(svm.model, file = paste(storage.directory, "svm.model.RData", sep = ""))
     
     # Random Forest (SLOW: Takes MANY HOURS to run)
     a = Sys.time()
@@ -228,13 +249,14 @@ source("functions.R") #get cleaning function, AFINN_lexicon
     Sys.time()-a
     
     pred.sentiment=predict(rf.model, newdata = emoticon.tf.idf)
-    confusionMatrix(pred.sentiment,emoticon$polarity)
+    confusionMatrix(pred.sentiment,emoticon.tf.idf$polarity)
     
     phat=predict(rf.model,
                  newdata = emoticon.tf.idf,
                  type = "prob")
-    plot(roc(emoticon$polarity,phat[,2]))
+    plot(roc(emoticon.tf.idf$polarity,phat[,2]))
     
+    save(rf.model, file = paste(storage.directory, "rf.model.RData", sep = ""))
     
     
   # Apply lexicon and random forest to test (sent140 data)
