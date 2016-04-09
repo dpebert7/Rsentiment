@@ -1,2 +1,0 @@
-#Ebert/Rider
-#Junkfile.R
