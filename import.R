@@ -13,7 +13,18 @@
   # LA2016
 
   #Sentiment140
-    testdata = read.csv(file = "testdata.manual.2009.06.14.csv", header = FALSE, stringsAsFactors = FALSE)
+    test = read.csv("testdata.manual.2009.06.14.csv", header = FALSE, colClasses = 
+                      c("character", "character", "character", "character", "character", "character"))
+    colnames(test) = c("polarity", "not_sure", "created_at", "search_query", "username", "text")
+    
+    test[test$polarity == 0,]$polarity = 0
+    test[test$polarity == 4,]$polarity = 1
+    table(test$polarity)
+    
+    test = test[test$polarity !=2, c("polarity", "text")]
+    test$polarity = as.factor(test$polarity)
+    test$clean = clean.tweets(test$text)
+    save(test, file = paste(storage.directory, "sent140.RData", sep = ""))
 
 # Import lexicons ----
 

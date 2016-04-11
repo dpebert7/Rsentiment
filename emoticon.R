@@ -195,7 +195,7 @@
   
   #Term Frequencies (Takes about 25 minutes to run with 100k tweets)
   a = Sys.time()
-  term.freq <- t(apply(t(emoticon[,"clean"]), 2,    #TAKES TIME; 10 minute for 100 000 tweets and 1276 terms 
+  term.freq <- t(apply(t(emoticon[,"clean"]), 2,    #TAKES TIME; 10 minutes for 100 000 tweets and 1276 terms 
                        ndsi.frequencies))
   Sys.time()-a
   
@@ -205,13 +205,17 @@
   inv.doc.freq[is.infinite(inv.doc.freq)]=0
   range(inv.doc.freq)
   
+  #SAVE inv.doc.freq for later use. In particular we care about its diagonal.
+  save(inv.doc.freq, file = paste(storage.directory, "inv.doc.freq.RData", sep = "")) #save inv.doc freq for classifier
+  load(file = paste(storage.directory, "inv.doc.freq.RData", sep = ""))
+  
   tf.idf = term.freq %*% diag(inv.doc.freq)
   
   save(tf.idf, file = paste(storage.directory,"tf.idf.RData", sep = "")) # save tf.idf lexicon into memory as tf.idf
   load(paste(storage.directory,"tf.idf.RData", sep = "")) # load tf.idf lexicon into memory as tf.idf
 
 # Random Forest Using NDSI tf.idf ----
-  emoticon.tf.idf = data.frame(polarity=emoticon$polarity,tf.idf)
+  emoticon.tf.idf = data.frame(polarity=emoticon$polarity, tf.idf)
   
   save(emoticon.tf.idf, file = paste(storage.directory,"emoticon.tf.idf.RData", sep = "")) # save emoticon.tf.idf lexicon into memory as tf.idf
   load(paste(storage.directory,"emoticon.tf.idf.RData", sep = "")) # load emoticon.tf.idf lexicon into memory as tf.idf

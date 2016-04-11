@@ -1,4 +1,4 @@
- #David Ebert
+#David Ebert
 #21 March 2016
 #Data Mining Homework 24
 
@@ -156,8 +156,7 @@ source("functions.R") #get cleaning function, AFINN_lexicon
       precision = 20830/(20830+11532) # 64%
       recall =  20830/(20830+8388+19521) # 42%
       f1 = (2*precision*recall)/(precision + recall) # 51.36% 
-    
-    
+
 
 # MODELS INVOLVING AFINN SCORE (using only test data) ----
   a = Sys.time()
@@ -179,7 +178,7 @@ source("functions.R") #get cleaning function, AFINN_lexicon
 # B BAG OF WORDS (random forest using term frequencies) ----
   
   # Lexicon from the training (emoticon) data
-    load("~/Desktop/Huang Research/Rsentiment/emoticon.RData") # load train/emoticon into memory as emoticon
+    load(paste(storage.directory, "emoticon.RData", sep = "")) # load train/emoticon into memory as emoticon
     table(emoticon$polarity)
 
     load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
@@ -197,7 +196,8 @@ source("functions.R") #get cleaning function, AFINN_lexicon
     nTraining = 25000
     emoticon.tf.idf = (rbind(head(emoticon.tf.idf,nTraining), tail(emoticon.tf.idf,nTraining))) #training data
     emoticon.tf.idf = emoticon.tf.idf[c((nTraining+1):50000,50001:(100000-(nTraining))),] #test data
-    
+
+
   # Build a model using emoticon data and new dictionary
     # rpart tree (<10 minutes to run, even for lots of data) 
     a = Sys.time()
@@ -259,9 +259,49 @@ source("functions.R") #get cleaning function, AFINN_lexicon
     save(rf.model, file = paste(storage.directory, "rf.model.RData", sep = ""))
     
     
-  # Apply lexicon and random forest to test (sent140 data)
+  # Apply lexicon and random forest to test (sent140) data for outside validation
     
-  
+    # Import sent140 as "test"
+    load(file = paste(storage.directory, "sent140.RData", sep = ""))
+    
+    # Import rf.model
+    load(file = paste(storage.directory, "rf.model.RData", sep = ""))
+    summary(rf.model)
+    
+    # Import freq.all lexicon and limit to 1276 words with ndsi above 0.05
+    load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
+    ndsi.lexicon = freq.all[freq.all$ndsi>0.05,]
+    dim(ndsi.lex)
+    
+    #Import inv.doc.freq
+    load(file = paste(storage.directory, "inv.doc.freq.RData", sep = ""))
+    
+    # Apply freq.all to cleaned test data (2 secs for test's 359 rows, but otherwise costly)
+    term.freq <- t(apply(t(test[,"clean"]), 2,    #MAY TAKE TIME!
+                         ndsi.frequencies))
+    
+    # Matrix Multiply by diag(inv.doc.freq) from training data
+    bigmatrixforclassification = term.freq %*% diag(inv.doc.freq) #term.freq from before, diag(inv.doc.freq) from emoticon data
+
+    # Prediction
+    bigmatrixforclassification = as.data.frame(bigmatrixforclassification)
+    colnames(bigmatrixforclassification) = paste("X", 1:1024, sep = "") #hacky fix for column names
+    pred.sentiment=predict(rf.model, newdata = bigmatrixforclassification)
+    
+    #Accuracy
+    confusionMatrix(pred.sentiment,test$polarity) # Accuracy is a respectable 68%
+    
+    # ROC curve
+    phat=predict(rf.model,
+                 newdata = bigmatrixforclassification,
+                 type = "prob")
+    plot(roc(test$polarity,phat[,2])) #Even more respectable 76.65%
+    
+    
+    
+    
+    
+    
   
   
 # C TFIDF (random forest using term frequencies) ----

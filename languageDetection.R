@@ -14,20 +14,17 @@ unlink(pkgFile)
 library(cldr)
 demo(cldr)
 
-x$language = detectLanguage(x$clean)$detectedLanguage
-x$isReliable = detectLanguage(x$clean)$isReliable
-table(x$isReliable, x$language)
-
+x[,c("language", "isReliable")] = detectLanguage(x$text)[c("detectedLanguage", "isReliable")]
 
 #non-English Tweets
-dim(x[x$language != "ENGLISH" & x$isReliable == TRUE, c("clean", "language")]) #The blank and SPANISH tweets look like they could be removed, but other tweets look pretty English
-x[x$language != "ENGLISH" & x$isReliable == TRUE, c("clean", "language")]
+dim(x[x$language != "ENGLISH" & x$isReliable == TRUE, c("text", "language")]) #The blank and SPANISH tweets look like they could be removed, but other tweets look pretty English
+x[x$language != "ENGLISH" & x$isReliable == TRUE, c("text", "language")]
 
 
 #Spanish Tweets
-dim(x[x$language == "SPANISH" & x$isReliable == TRUE, c("clean", "language")])
-x[x$language == "SPANISH" & x$isReliable == TRUE, c("clean", "language")]
+dim(x[x$language == "SPANISH" & x$isReliable == TRUE, c("text", "language")])
+x[x$language == "SPANISH" & x$isReliable == TRUE, c("text", "language")]
 
 #Unknown Tweets
-dim(x[x$language == "Unknown" & x$isReliable == TRUE, c("clean", "language")])
-x[x$language == "Unknown" & x$isReliable == TRUE, c("clean", "language")] #These are all blank tweets
+dim(x[x$language == "Unknown" & x$isReliable == TRUE, c("text", "language")])
+x[x$language == "Unknown" & x$isReliable == TRUE, c("text", "language")] #These are all blank tweets

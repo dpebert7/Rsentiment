@@ -5,52 +5,78 @@
 # packages 
 library(plyr)
 library(dplyr)
-# Does this zipfR package have anything we could use?
 
-load("~/Desktop/Huang Research/Rsentiment/comTweetsLA.RData") # load LA2014 into memory as x
+load(file = paste(storage.directory, "x.RData", sep = "")) # load LA2014 into memory as x
 
-
-x$text<-as.character(x$text)
-x$username<-as.character(x$username)
-summary(x)
-summary(x$username)
-
-# Plot tweets per username
-name.count<-data.frame(count(x,username))
-# name.count$username<-as.character(name.count$username)
-names(name.count)<-c("username","frequency")
-name.count<-filter(name.count,username != "")
-name.count<-arrange(name.count,desc(frequency))
-hist(name.count$frequency)
-plot(name.count$frequency,
-     log = "y",
-     xlab = "Unique Usernames",
-     ylab = "Number of Tweets",
-     type = "l")
+# Plot tweets per username ----
+name.count = as.data.frame(table(x$username))
+names(name.count)<-c("username","nTweets")
+name.count<-arrange(name.count,desc(nTweets))
+hist(name.count$nTweets)
+plot(name.count$nTweets,
+      log = "y",
+      pch = 20,
+      main = "Tweets per Username",
+      xlab = "Unique Usernames",
+      ylab = "Number of Tweets")
 
 
-# Plot time of day
-hour.count<-data.frame(count(x,hour))
-plot(hour.count$hour,hour.count$n)
-
-# Plot month (not very interesting)
-month.count<-data.frame(count(x,month))
-plot(month.count$month,month.count$n)
-
-# Plot day of month (not very interesting)
-date.count<-data.frame(count(x,date))
-plot(date.count$date,date.count$n)
-
-# Plot tweets per day of the week.
-dow.df <- data.frame(x$year,x$month,x$date)
-names(dow.df) <- c("year","month","day")
-dow.df$date <- paste(dow.df$year,dow.df$month,dow.df$day,sep = "-")
-dow.df<-filter(dow.df, year != "NA")
-dow.df<-filter(dow.df, month != "NA")
-dow.df<-filter(dow.df, day != "NA")
-dow.df$date <- as.Date(dow.df$date)
-dow.df$wkday<-as.POSIXlt(dow.df$date)$wday
-dow.count<-data.frame(count(dow.df,wkday))
-plot(dow.count$wkday,dow.count$n,
-     xlab = "day of week",
+# Plot hour of day ----
+hour.count = as.data.frame(table(x$time$hour))
+names(hour.count) = c("hour", "frequency")
+hour.count$hour = as.integer(hour.count$hour)
+plot(x = hour.count$hour,
+     y = hour.count$frequency,
+     type = "p",
+     main = "Time of Day",
+     xlab = "hour",
      ylab = "number of tweets")
+
+# Plot month (not very interesting) ----
+month.count = as.data.frame(table(x$time$mon))
+names(month.count) = c("month", "frequency")
+month.count$month = as.integer(month.count$month)
+plot(x = month.count$month,
+     y = month.count$frequency,
+     type = "p",
+     main = "Time of Year",
+     xlab = "Month",
+     ylab = "Numer of Tweets")
+
+# Skip day of month (not very interesting) ----
+
+# Plot tweets per day of the week (dow) ----
+dow.count = as.data.frame(table(x$time$wday))
+names(dow.count) = c("dow", "frequency")
+dow.count$dow = as.integer(dow.count$dow)
+plot(x = dow.count$dow,
+     y = dow.count$frequency,
+     type = "p",
+     main = "Time of Week",
+     xlab = "Day of Week",
+     ylab = "Numer of Tweets")
+
+
+#try some junk in ggplot2 ----
+
+library(ggplot2)
+ggplot(name.count) +
+  aes(nTweets) +
+  geom_histogram(binwidth = 200) +
+  scale_y_log10() +
+  ggtitle("Frequency Histogram") +
+  xlab("# of Tweets") +
+  ylab("# of Usernames")
+
+# This looks a little weird. I think it's right though. It might be better to switch x and y axes?
+
+ggplot(month.count) + 
+  geom_line(aes(x = month, y = frequency),
+             colour = "blue", 
+            size = 3)
+
+
+
+
+
+

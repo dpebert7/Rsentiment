@@ -14,11 +14,13 @@ library(pROC) #ROC curves
 library(randomForest)
 library(rpart)
 library(tm) # for building term frequency matrix from corpus
+library(cldr) # for detecting tweet language
 
 
 #AFINN_lexicon
   AFINN_lexicon = read.delim(file = "Lexicons/AFINN/AFINN-111.txt", stringsAsFactors = FALSE, header = F, quote = '')
   names(AFINN_lexicon) <- c('word','score')
+  AFINN_lexicon = rbind(AFINN_lexicon, c("happytoken", 5), c("sadtoken", -5))
   AFINN_lexicon$word.clean <- gsub('-',' ' , AFINN_lexicon$word)  #Replacing Hyphens with Spaces
   AFINN_lexicon$word.clean <- gsub("[[:punct:]]", '', AFINN_lexicon$word.clean)  #Removing punctuation
 
@@ -76,6 +78,8 @@ ndsi.frequencies=function(x){
   str_count(x,freq.all$word[1:1024])
 }
 
+negations = c("no", "not","none","nobody","nothing","neither","never","doesnt","isnt","wasnt","shouldnt","wouldnt", "couldnt","wont","cant","dont")
+
 classify.sentiment = function(documents, lexicon = AFINN_lexicon){
   sentscorevec = laply(documents, function(documents, lex = lexicon)
   {
@@ -106,15 +110,15 @@ classify.sentiment = function(documents, lexicon = AFINN_lexicon){
 
 # Additional functions
 
-confmatrix=function(y,predy){
-  matrix=table(y,predy)
-  accuracy=sum(diag(matrix))/sum(matrix)
-  return(list(matrix=matrix,accuracy=accuracy,error=1-accuracy))
-}
+# confmatrix=function(y,predy){
+#   matrix=table(y,predy)
+#   accuracy=sum(diag(matrix))/sum(matrix)
+#   return(list(matrix=matrix,accuracy=accuracy,error=1-accuracy))
+# }
 
 
 
-rand.which.max=function(x){
-  index=((1:length(x))[x==(max(x))])
-  return(sample(c(index,index),1))
-}
+# rand.which.max=function(x){
+#   index=((1:length(x))[x==(max(x))])
+#   return(sample(c(index,index),1))
+# }
