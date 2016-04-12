@@ -6,7 +6,7 @@
 library(plyr)
 library(dplyr)
 
-load(file = paste(storage.directory, "x.RData", sep = "")) # load LA2014 into memory as x
+load(file = paste(storage.directory, "x.RData", sep = "")) # load (Spanish-free) LA2014 into memory as x
 
 # Plot tweets per username ----
 name.count = as.data.frame(table(x$username))

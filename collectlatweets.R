@@ -7,8 +7,8 @@
 # that is about 500MB in size.
 
 library(ROAuth)
-load("my_oauth.Rdata") #Note to avoid reusing credentials, "my_oauth.Rdata" should only be 
-                        #used on the school computer
+load("my_oauth.Rdata") # Note to avoid reusing credentials, "my_oauth.Rdata" should only be 
+                       # used on the school computer
 
 keepCapturingTweets = function(){
   require(streamR)
@@ -23,8 +23,9 @@ keepCapturingTweets = function(){
       filterStream(file.name = temp.file.json, # Save tweets in temporary .json file
                    # Note that this file isn't overwritten after timeout
                    track = c(""), # Collect any tweets from stream; no search term
-                   language = "en",
-                   location = c(-119, 33, -117, 35), 
+                   language = "en", # English tweets
+                   location = c(-119, 33, -117, 35), # LA county coordinates. 
+                                                     # Note that some tweets just outside the location area may also be collected.
                    timeout = 1800, # Keep connection alive for up to 30 minutes at a time
                    oauth = my_oauth) # Use my_oauth file as the OAuth credentials
       Sys.sleep(1) #pause very briefly before reopening stream

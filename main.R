@@ -70,7 +70,7 @@
 
   
 # read data back into R as y ----
-  y = read.csv(file = paste(storage.directory, "LA2014.csv", sep = ""), skip = 0, nrows = 2000, header = TRUE, 
+  y = read.csv(file = paste(storage.directory, "LA2014.csv", sep = ""), skip = 0, nrows = 9000000, header = TRUE, 
                  colClasses = c("character", "character", "character", "numeric", "numeric", "POSIXct", "integer"))
   y$time = as.POSIXlt(y$time)
   

@@ -36,12 +36,12 @@
     ANEW = read.csv(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/ANEW.csv", header = FALSE)
     colnames(ANEW) = c("word", "score")
     #ANEW$score = ANEW$score-(mean(ANEW$score)+1) #normalize ANEW scores to 0. This didn't work as well as the next line did.
-    ANEW$score = ANEW$score - 5
+    ANEW$score = ANEW$score - 6
     range(ANEW$score)
     head(ANEW[order(-ANEW$score),], 20) #happiest words
     head(ANEW[order(ANEW$score),], 20) #saddest words
 
-  #NRC Word-Emotion Association Lexicon
+  #NRC Word-Emotion Association Lexicon (formerly known as EmoLex)
     NRC = read.csv(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/EmoLex/NRC-emotion-lexicon-wordlevel-alphabetized-v0.92.txt",
                      sep = "\t", header = FALSE)
     colnames(NRC) = c("word", "emotion", "indicator")
@@ -51,7 +51,7 @@
     NRC = NRC[c("word", "indicator")]
     colnames(NRC) = c("word", "score")
 
-  #OpinionFinder Lexicon
+  #OpinionFinder Lexicon (Formerly known as Wiebe)
     OpinionFinder = read.csv(system.file("data/subjectivity.csv.gz", 
                                      package = "sentiment"), header = FALSE, stringsAsFactors = FALSE)
     #write.csv(OpinionFinder, file = "OpinionFinder")

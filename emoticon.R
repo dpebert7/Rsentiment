@@ -4,7 +4,7 @@
 
 
 # READ IN DATA ComTweetsLA.csv in +- 2 mins ----
-  load("~/Desktop/Huang Research/Rsentiment/comTweetsLA.RData") # load LA2014 into memory as x
+  load("~/Desktop/Huang Research/Rsentiment/x.RData") # load LA2014 (non-Spanish-ish) into memory as x
 
 # HAPPY EMOTICONS ----
   grep("\\:\\)", x$text, value = TRUE) #67189 :)'s in the whole set. Takes about 11 sec. to run
@@ -24,7 +24,7 @@
   #grep everything all at once
   happy_indices = grep(paste(happy_emoticons, collapse = "|"),x$text, value = FALSE)
 
-  length(happy_indices) #happy_indices has length 147400
+  length(happy_indices) #happy_indices has length 144678
   x = x[happy_indices,] #Rewrite over x to avoid memory problems
   dim(x) # Looks good
   write.csv(x,file = "~/Desktop/Huang Research/Rsentiment/happy_tweets_2014", row.names = FALSE)
@@ -41,19 +41,19 @@
   grep("\\)\\:", x$text, value = TRUE) #5489 ):'s in the whole set. 
   grep("\\)-\\:", x$text, value = TRUE) #355 )-:'s in the whole set. 
   grep(":\\[", x$text, value = TRUE) #70 :['s in the whole set.
-  grep("\\]:", x$text, value = TRUE) #2636 ]:'s in the whole set.
+  #grep("\\]:", x$text, value = TRUE) #2636 ]:'s in the whole set. DON'T USE THIS ONE. IT'S A LIE!!! [pic]: 
   grep(":\\{", x$text, value = TRUE) #32 :{'s in the whole set.
   grep("\\}:", x$text, value = TRUE) #25 }:'s in the whole set.
   grep("=\\(", x$text, value = TRUE) #131 =('s in the whole set
   grep("\\)=", x$text, value = TRUE) #59 )='s in the whole set
   grep("☹", x$text, value = TRUE) #222 of these in the whole set
   
-  sad_emoticons = c("\\:\\(", "\\:-\\(", "\\)\\:", "\\)-\\:", ":\\[", "\\]:", ":\\{", "\\}:","=\\(", "\\)=", "☹")
+  sad_emoticons = c("\\:\\(", "\\:-\\(", "\\)\\:", "\\)-\\:", ":\\[", ":\\{", "\\}:","=\\(", "\\)=", "☹")
   
   #grep everything all at once
   sad_indices = grep(paste(sad_emoticons, collapse = "|"),x$text, value = FALSE)
 
-  length(sad_indices) #sad_indices has length 52498
+  length(sad_indices) #sad_indices has length 47982
   x = x[sad_indices,] #Write over x to avoid memory problems
   dim(x) # Looks good
   write.csv(x,file = "~/Desktop/Huang Research/Rsentiment/sad_tweets_2014", row.names = FALSE)
@@ -94,34 +94,34 @@
 
 # WRITE HAPPY AND SAD TO A BALANCED DF OF 102 000 TWEETS ----
 
-  happy = read.csv(file = "~/Desktop/Huang Research/Rsentiment/happy_tweets_2014", header = TRUE, colClasses = 
+  happy_tweets = read.csv(file = "~/Desktop/Huang Research/Rsentiment/happy_tweets_2014", header = TRUE, colClasses = 
                      c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
   
-  sad = read.csv(file = "~/Desktop/Huang Research/Rsentiment/sad_tweets_2014", header = TRUE, colClasses = 
+  sad_tweets = read.csv(file = "~/Desktop/Huang Research/Rsentiment/sad_tweets_2014", header = TRUE, colClasses = 
                    c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
   
   # Clean tweets, remove blank tweets, then undersample from happy so that happy has as many tweets as sad does.
-  happy$clean = clean.tweets(happy$text, happyToken = "", sadToken = "") # do NOT tokenize :)
-  sad$clean = clean.tweets(sad$text, happyToken = "", sadToken = "")     # do NOT tokenize :(
-  happy$text = NULL
-  sad$text = NULL
+  happy_tweets$clean = clean.tweets(happy$text, happyToken = "", sadToken = "") # do NOT tokenize :)
+  sad_tweets$clean = clean.tweets(sad$text, happyToken = "", sadToken = "")     # do NOT tokenize :(
+  happy_tweets$text = NULL
+  sad_tweets$text = NULL
   
-  happy  = happy[happy$clean!="",]
-  sad  = sad[sad$clean!="",]
+  happy_tweets  = happy_tweets[happy_tweets$clean!="",]
+  sad_tweets  = sad_tweets[sad_tweets$clean!="",]
   
   set.seed(127)
-  index = sample(nrow(happy),nrow(sad))
-  happy = happy[index,]
-  dim(happy)
-  dim(sad) #both should have same number of rows
+  index = sample(nrow(happy_tweets),nrow(sad_tweets))
+  happy_tweets = happy_tweets[index,]
+  dim(happy_tweets)
+  dim(sad_tweets) #both should have same number of rows
 
   # Initialize polarity of happy and sad tweets
-  happy$polarity = as.factor(1)
-  sad$polarity = as.factor(0)
-  train = rbind(as.data.frame(happy[,c("clean", "polarity")]),sad[,c("clean", "polarity")]) 
-  colnames(train) = c("clean", "polarity") #note that cleaning already took place, so these column names are appropriate
-  dim(train)
-  table(train$polarity)
+  happy_tweets$polarity = as.factor(1)
+  sad_tweets$polarity = as.factor(0)
+  emoticon = rbind(as.data.frame(happy_tweets[,c("clean", "polarity")]),sad_tweets[,c("clean", "polarity")]) 
+  colnames(emoticon) = c("clean", "polarity") #note that cleaning already took place, so these column names are appropriate
+  dim(emoticon)
+  table(emoticon$polarity)
   save(emoticon, file = paste(storage.directory,"emoticon.RData", sep = "")) # save train/emoticon into memory as emoticon
   load(paste(storage.directory,"emoticon.RData", sep = "")) # load train/emoticon into memory as emoticon
   
@@ -181,6 +181,8 @@
   freq.all$word = as.character(freq.all$word)
   
   dim(freq.all)
+  head(freq.all)
+  freq.all = freq.all[freq.all$word != "sadtoken" & freq.all$word != "happytoken",]
   save(freq.all, file = paste(storage.directory,"freq.all.RData", sep = "")) # save freq.all into memory as freq.all.RData
   load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
 
@@ -214,7 +216,7 @@
   save(tf.idf, file = paste(storage.directory,"tf.idf.RData", sep = "")) # save tf.idf lexicon into memory as tf.idf
   load(paste(storage.directory,"tf.idf.RData", sep = "")) # load tf.idf lexicon into memory as tf.idf
 
-# Random Forest Using NDSI tf.idf ----
+# emoticon.tf.idf for training and testing machine learning classifiers using EMOTICON data ----
   emoticon.tf.idf = data.frame(polarity=emoticon$polarity, tf.idf)
   
   save(emoticon.tf.idf, file = paste(storage.directory,"emoticon.tf.idf.RData", sep = "")) # save emoticon.tf.idf lexicon into memory as tf.idf
