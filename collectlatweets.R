@@ -42,4 +42,3 @@ keepCapturingTweets = function(){
 # 30 minutes after midnight
 
 keepCapturingTweets()
-

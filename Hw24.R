@@ -187,7 +187,7 @@ source("functions.R") #get cleaning function, AFINN_lexicon
   # Lexicon from the emoticoning (emoticon) data
     load(paste(storage.directory, "emoticon.RData", sep = "")) # load emoticon/emoticon into memory as emoticon
     table(emoticon$polarity)
-
+    
     load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
     head(freq.all)
     
@@ -196,15 +196,16 @@ source("functions.R") #get cleaning function, AFINN_lexicon
     
     
     
-    # load emoticon.tf.idf created by emoticon.R
-    load(paste(storage.directory,"emoticon.tf.idf.RData", sep = "")) # load emoticon.tf.idf lexicon into memory as tf.idf
     
-    happy_indices = 1:(nrow(emoticon.tf.idf)/2)
-    sad_indices = (nrow(emoticon.tf.idf)/2+1):(nrow(emoticon.tf.idf))
+    # load emoticon.term.freq created by emoticon.R
+    load(paste(storage.directory,"emoticon.term.freq.RData", sep = "")) # load emoticon.term.freq lexicon into memory as tf.idf
+    
+    happy_indices = 1:(nrow(emoticon.term.freq)/2)
+    sad_indices = (nrow(emoticon.term.freq)/2+1):(nrow(emoticon.term.freq))
     
     # Training and test data indices
-    nTrain = 20000
-    nTest = 20000
+    nTrain = 40000
+    nTest = 40000
     
     train = c(sample(happy_indices,nTrain/2), sample(sad_indices,nTrain/2))
     test = c(sample(happy_indices,nTest/2), sample(sad_indices,nTest/2))  
@@ -214,37 +215,37 @@ source("functions.R") #get cleaning function, AFINN_lexicon
   # Build a model using emoticon data and new dictionary
     # rpart tree (<10 minutes to run, even for lots of data) 
       a = Sys.time()
-      tree.model = rpart(polarity~., data = emoticon.tf.idf[train,])
+      tree.model = rpart(polarity~., data = emoticon.term.freq[train,])
       Sys.time()-a
     
     #Train data results
-      pred.sentiment = predict(tree.model, newdata = emoticon.tf.idf[train,], type = "class")
-      confusionMatrix(pred.sentiment,emoticon.tf.idf[train,"polarity"])
-      phat=predict(tree.model, newdata = emoticon.tf.idf[train,], type = "prob")
-      plot(roc(emoticon.tf.idf[train,"polarity"],phat[,2]))
+      pred.sentiment = predict(tree.model, newdata = emoticon.term.freq[train,], type = "class")
+      confusionMatrix(pred.sentiment,emoticon.term.freq[train,"polarity"])
+      phat=predict(tree.model, newdata = emoticon.term.freq[train,], type = "prob")
+      plot(roc(emoticon.term.freq[train,"polarity"],phat[,2]))
     
     #Test data results
-      pred.sentiment = predict(tree.model, newdata = emoticon.tf.idf[test,], type = "class")
-      confusionMatrix(pred.sentiment,emoticon.tf.idf[test,"polarity"])
-      phat=predict(tree.model, newdata = emoticon.tf.idf[test,], type = "prob")
-      plot(roc(emoticon.tf.idf[test,"polarity"],phat[,2]))
+      pred.sentiment = predict(tree.model, newdata = emoticon.term.freq[test,], type = "class")
+      confusionMatrix(pred.sentiment,emoticon.term.freq[test,"polarity"])
+      phat=predict(tree.model, newdata = emoticon.term.freq[test,], type = "prob")
+      plot(roc(emoticon.term.freq[test,"polarity"],phat[,2]))
     
     # SVM
       a = Sys.time()
-      svm.model=svm(polarity~.,data = emoticon.tf.idf[train,])
+      svm.model=svm(polarity~.,data = emoticon.term.freq[train,])
       Sys.time()-a
     
     #Train data results
-      pred.sentiment = predict(svm.model, newdata = emoticon.tf.idf[train,], type = "class")
-      confusionMatrix(pred.sentiment,emoticon.tf.idf[train,"polarity"])
-      phat=predict(svm.model, newdata = emoticon.tf.idf[train,], type = "prob")
-      plot(roc(emoticon.tf.idf[train,"polarity"],phat[,2]))  
+      pred.sentiment = predict(svm.model, newdata = emoticon.term.freq[train,], type = "class")
+      confusionMatrix(pred.sentiment,emoticon.term.freq[train,"polarity"])
+      phat=predict(svm.model, newdata = emoticon.term.freq[train,], type = "prob")
+      plot(roc(emoticon.term.freq[train,"polarity"],phat[,2]))  
     
     #Test data results
-      pred.sentiment = predict(svm.model, newdata = emoticon.tf.idf[test,], type = "class")
-      confusionMatrix(pred.sentiment,emoticon.tf.idf[test,"polarity"])
-      phat=predict(svm.model, newdata = emoticon.tf.idf[test,], type = "prob")
-      plot(roc(emoticon.tf.idf[test,"polarity"],phat[,2]))
+      pred.sentiment = predict(svm.model, newdata = emoticon.term.freq[test,], type = "class")
+      confusionMatrix(pred.sentiment,emoticon.term.freq[test,"polarity"])
+      phat=predict(svm.model, newdata = emoticon.term.freq[test,], type = "prob")
+      plot(roc(emoticon.term.freq[test,"polarity"],phat[,2]))
     
     #Save model
       save(svm.model, file = paste(storage.directory, "svm.model.RData", sep = ""))
@@ -252,25 +253,25 @@ source("functions.R") #get cleaning function, AFINN_lexicon
     
     # Random Forest (SLOW: Takes MANY HOURS to run)
       a = Sys.time()
-      rf.model=randomForest(polarity~.,data = emoticon.tf.idf[train,])
+      rf.model=randomForest(polarity~.,data = emoticon.term.freq[train,])
       Sys.time()-a
     
       #Train data results
-        pred.sentiment = predict(rf.model, newdata = emoticon.tf.idf[train,], type = "class")
-        confusionMatrix(pred.sentiment,emoticon.tf.idf[train,"polarity"])
-        phat=predict(rf.model, newdata = emoticon.tf.idf[train,], type = "prob")
-        plot(roc(emoticon.tf.idf[train,"polarity"],phat[,2]))  
+        pred.sentiment = predict(rf.model, newdata = emoticon.term.freq[train,], type = "class")
+        confusionMatrix(pred.sentiment,emoticon.term.freq[train,"polarity"])
+        phat=predict(rf.model, newdata = emoticon.term.freq[train,], type = "prob")
+        plot(roc(emoticon.term.freq[train,"polarity"],phat[,2]))  
       
       #Test data results
-        pred.sentiment = predict(rf.model, newdata = emoticon.tf.idf[test,], type = "class")
-        confusionMatrix(pred.sentiment,emoticon.tf.idf[test,"polarity"])
-        phat=predict(rf.model, newdata = emoticon.tf.idf[test,], type = "prob")
-        plot(roc(emoticon.tf.idf[test,"polarity"],phat[,2]))
+        pred.sentiment = predict(rf.model, newdata = emoticon.term.freq[test,], type = "class")
+        confusionMatrix(pred.sentiment,emoticon.term.freq[test,"polarity"])
+        phat=predict(rf.model, newdata = emoticon.term.freq[test,], type = "prob")
+        plot(roc(emoticon.term.freq[test,"polarity"],phat[,2]))
         
       #Save model
         save(rf.model, file = paste(storage.directory, "rf.model.RData", sep = ""))
+        print("DONE! YAY!!!")
       
-      #sent140 results
 
     
     
@@ -285,6 +286,10 @@ source("functions.R") #get cleaning function, AFINN_lexicon
     
     # Import svm.model
     load(file = paste(storage.directory, "svm.model.RData", sep = ""))
+    
+    # Import freq.all lexicon
+    load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
+    
     
     classify.polarity.machine = function(data, model, give.accuracy = FALSE, give.roc.curve = FALSE){
       source("functions.R")
@@ -322,9 +327,10 @@ source("functions.R") #get cleaning function, AFINN_lexicon
       }
       
       print("hello world!")
-      pred.sentiment
+      #pred.sentiment
     }
     
+    classify.polarity.machine(data = sent140, model = rf.model, give.accuracy = TRUE, give.roc.curve = TRUE)
     
     
     
