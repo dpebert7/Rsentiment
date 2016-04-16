@@ -7,14 +7,18 @@ storage.directory = "~/Desktop/Huang Research/Rsentiment/"
 
 # Load libraries for other scripts
 library(stringr) #library for str_count function
-library(e1071) # for naive bayes model
 library(ggplot2) #for graphs
 library(caret) #for confusionMatrix
-library(pROC) #ROC curves
-library(randomForest)
-library(rpart)
-library(tm) # for building term frequency matrix from corpus
-library(cldr) # for detecting tweet language
+
+#library(tm) # for building term frequency matrix from corpus
+#library(cldr) # for detecting tweet language
+#library(beepr) # for beeping, just use beepr::beep(3)
+
+
+#library(e1071) # for naive bayes model
+#library(pROC) #ROC curves
+#library(randomForest)
+#library(rpart)
 
 
 #AFINN_lexicon
@@ -81,6 +85,8 @@ ndsi.frequencies=function(x){
 negations = c("no", "not","none","nobody","nothing","neither","never","doesnt","isnt","wasnt","shouldnt","wouldnt", "couldnt","wont","cant","dont")
 
 classify.sentiment = function(documents, lexicon = AFINN_lexicon){
+  require(plyr)
+  require(dplyr)
   sentscorevec = laply(documents, function(documents, lex = lexicon)
   {
     words = unlist(strsplit(documents, " ")) #access words
@@ -107,6 +113,54 @@ classify.sentiment = function(documents, lexicon = AFINN_lexicon){
   }, .progress = "text")
   return(sentscorevec)
 }
+
+
+classify.polarity.machine = function(documents, model = rf.model){
+  require(plyr)
+  require(dplyr)
+  require(randomForest)
+  load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
+  ndsi.lexicon = freq.all[freq.all$ndsi>0.05,]
+  
+  sentpredvec = laply(documents, function(documents, mod = model)
+  {
+    term.freq <- t(apply(t(documents), 2,    #MAY TAKE TIME!
+                         ndsi.frequencies))
+    
+    colnames(term.freq) = paste("X", 1:1024, sep = "") #hacky fix for column names
+    pred.sentiment = predict(model, newdata = term.freq, type = "prob")
+    
+    return(pred.sentiment[1])
+  }, .progress = "text")
+  return(sentpredvec)
+}
+
+
+
+
+multipurpose.classify.polarity.machine = function(documents, model = rf.model, as.prob = FALSE){
+  require(plyr)
+  require(dplyr)
+  load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
+  ndsi.lexicon = freq.all[freq.all$ndsi>0.05,]
+  
+  sentpredvec = laply(documents, function(documents, mod = model)
+  {
+    
+    term.freq <- t(apply(t(documents), 2,    #MAY TAKE TIME!
+                         ndsi.frequencies))
+    
+    colnames(term.freq) = paste("X", 1:1024, sep = "") #hacky fix for column names
+    pred.sentiment = predict(model, newdata = term.freq, if(as.prob == TRUE){type = "prob"}else{type = "response"})
+    pred.sentiment = as.numeric(pred.sentiment)
+    
+    return(pred.sentiment)
+  }, .progress = "text")
+  return(sentpredvec)
+}
+
+
+
 
 # Additional functions
 

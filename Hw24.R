@@ -204,8 +204,8 @@ source("functions.R") #get cleaning function, AFINN_lexicon
     sad_indices = (nrow(emoticon.term.freq)/2+1):(nrow(emoticon.term.freq))
     
     # Training and test data indices
-    nTrain = 40000
-    nTest = 40000
+    nTrain = 10
+    nTest = 40
     
     train = c(sample(happy_indices,nTrain/2), sample(sad_indices,nTrain/2))
     test = c(sample(happy_indices,nTest/2), sample(sad_indices,nTest/2))  
@@ -286,52 +286,9 @@ source("functions.R") #get cleaning function, AFINN_lexicon
     
     # Import svm.model
     load(file = paste(storage.directory, "svm.model.RData", sep = ""))
+
     
-    # Import freq.all lexicon
-    load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
-    
-    
-    classify.polarity.machine = function(data, model, give.accuracy = FALSE, give.roc.curve = FALSE){
-      source("functions.R")
-      
-      
-      load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
-      ndsi.lexicon = freq.all[freq.all$ndsi>0.05,]
-      
-      term.freq <- t(apply(t(data[,"clean"]), 2,    #MAY TAKE TIME!
-                           ndsi.frequencies))
-      
-      load(file = paste(storage.directory, "inv.doc.freq.RData", sep = ""))
-      
-      bigmatrixforclassification = as.data.frame(term.freq %*% diag(inv.doc.freq))
-      colnames(bigmatrixforclassification) = paste("X", 1:1024, sep = "") #hacky fix for column names
-      pred.sentiment = predict(model, newdata = bigmatrixforclassification)
-      
-      if(give.accuracy != FALSE){
-        require(caret)
-        result = confusionMatrix(pred.sentiment, data$polarity) # Accuracy is a respectable 68%
-        print(result$table)
-        print(result$overall[1])
-        print(result$byClass[1])
-        print(result$byClass[2])
-        #give F1 measure too
-      }
-      
-      if(give.roc.curve != FALSE){
-        require(pROC)
-        phat=predict(model,
-                     newdata = bigmatrixforclassification,
-                     type = "prob")
-        result = plot(roc(data$polarity, phat[,2]))
-        print(result)
-      }
-      
-      print("hello world!")
-      #pred.sentiment
-    }
-    
-    classify.polarity.machine(data = sent140, model = rf.model, give.accuracy = TRUE, give.roc.curve = TRUE)
-    
+    classify.polarity.machine(documents = sent140$clean, model = rf.model)
     
     
 
@@ -341,7 +298,7 @@ source("functions.R") #get cleaning function, AFINN_lexicon
     ndsi.lexicon = freq.all[freq.all$ndsi>0.05,]
     dim(ndsi.lexicon)
     
-    #Import inv.doc.freq
+    #Import inv.doc.freq - no longer used
     load(file = paste(storage.directory, "inv.doc.freq.RData", sep = ""))
     
     # Apply freq.all to cleaned sent140 data (2 secs for sent140's 359 rows, but otherwise costly)
@@ -364,17 +321,11 @@ source("functions.R") #get cleaning function, AFINN_lexicon
                  newdata = bigmatrixforclassification,
                  type = "prob")
     plot(roc(sent140$polarity,phat[,2])) #Even more respectable 76.65%
-    
-    
-    
-    
-    
-    
-  
-  
-# C TFIDF (random forest using term frequencies) ----
 
-  
-# D NORMALIZED SENTIMENT DIFFERENCE INDEX----
-  print("hello world")
-  
+
+
+
+
+
+
+

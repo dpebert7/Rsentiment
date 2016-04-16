@@ -4,8 +4,8 @@
 # 1) Import AFINN, cleaning, and sentiment analysis functions from other scripts
 # 2) Apply sentiment analysis to LA2014 and LA2016
 
-
-# Pre-cleaning ComTweetsLA and saving as x ----
+##########################
+# Import ComTweetsLA as x and remove junk tweets ----
 
   # Import functions
     source("functions.R")
@@ -14,58 +14,96 @@
     x = read.csv(file = "~/Desktop/Huang Research/Rsentiment/ComTweetsLA.csv", skip = 1, nrows = 9400000, header = FALSE, colClasses = 
                    c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
     colnames(x) = c("text","username","tweet_id","lat","long","year","month","date","hour","minute","second")
+    
+  # Save x into storage directory
+    save(x, file = paste(storage.directory, "x.RData", sep = "")) 
+    
+  # loaded LA2014 as x
+    load(file = paste(storage.directory, "x.RData", sep = "")) 
   
   # remove 1479 tweets that don't have a date
-    x = x[!is.na(x$date),]
-    
-  # Set date and time
-    x$time = as.POSIXlt(paste(paste(x$year, x$month, x$date, sep = "-"), "  ", paste(x$hour, x$minute, x$second, sep = ":"), sep = ""))
-    x$year = NULL
-    x$month = NULL
-    x$date = NULL
-    x$hour = NULL
-    x$minute = NULL
-    x$second = NULL
+    x = x[!is.na(x$year),]
     
   # remove very Spanish-sounding tweets
+    library(cldr)
     x[,c("language", "isReliable")] = detectLanguage(x$text)[c("detectedLanguage", "isReliable")]
     x = x[x$language != "SPANISH" | x$isReliable == FALSE,]
     x$language = NULL
     x$isReliable = NULL
-    9383334-9227873
-    
-  # Save x into storage directory
-    save(x, file = paste(storage.directory, "x.RData", sep = "")) 
+    9383334-9227873 #155461 Spanish-sounding tweets are removed, about 1.5% of the tweets
 
-# Sentiment analysis of ComTweetsLA, loaded as x ----
-  # load x from storage directory
-    a = Sys.time()
-    print(a)
-    load(file = paste(storage.directory, "x.RData", sep = "")) 
+##########################
+# Cleaning and AFINN score ----
+  # load LA2014 as x
+    load(file = paste(storage.directory, "x.RData", sep = ""))     
+  
+  # split x into x1 and x2
+    #x1 = x[1:4500000,]
+    #rm(x)
+    x2 = x[4500001:nrow(x),]
+    rm(x)
+    
+  # Save x1  and x2 into storage directory
+    #save(x1, file = paste(storage.directory, "x1.RData", sep = "")) 
+    save(x2, file = paste(storage.directory, "x2.RData", sep = "")) 
     
   # clean x
-    x[,"text"] = clean.tweets(x$text)
+    names(x2)[names(x2)=="text"] <- "clean"
+    x2$clean = clean.tweets(x2$clean)
 
   # remove empty rows
-    x = x[nchar(x$text)>2,]
+    dim(x2)
+    x2 = x2[nchar(x2$clean)>2,]
+    dim(x2) # remove 258906 empty rows (~2.8%)
 
   # AFINN sentiment
-    x[,"AFINN.polarity"] = classify.sentiment(x$text, lexicon = AFINN_lexicon)
+    x2$AFINN.polarity = classify.sentiment(x2$clean)
 
-  #Skip rerunning Wiebe through sentiment2 because it's not as good and will run slower
-    dim(x) # text now has 12 columns, 1 more than before
-    head(x)
+  # Check number of columns
+    dim(x2) # x now has 12 columns, 1 more than before
+    head(x2)
+
+  # Save x1  and x2 into storage directory
+    # load(file = paste(storage.directory, "x1.RData", sep = "")) 
+    # save(file = paste(storage.directory, "x2.RData", sep = "")) 
     
-  # Random Forest Sentiment -- coming soon!
-
   # write table
-    write.table(x, file = paste(storage.directory, "LA2014.csv", sep = ""), row.names = FALSE, sep = ",")
+    # write.table(x1, file = paste(storage.directory, "LA2014.csv", sep = ""), row.names = FALSE, sep = ",")
   # append table
-    # write.table(x, file = paste(storage.directory, "LA2014.csv", sep = ""), col.names = FALSE, append = TRUE)
+    # write.table(x2, file = paste(storage.directory, "LA2014.csv", sep = ""), col.names = FALSE, append = TRUE)
+    
+    print(Sys.time() - a)
+    
+##########################
+# Random Forest Classifier ----
+    a = Sys.time()
+    print(a)
+    
+  # Load x1  and x2 from storage directory
+    #load(file = paste(storage.directory, "x1.RData", sep = "")) 
+    load(file = paste(storage.directory, "x2.RData", sep = "")) 
+    
+  # Random Forest Sentiment - too slow right now!
+    x2$rf.polarity = classify.polarity.machine(x2$clean, model = rf.model)
+    
+  # Check number of columns
+    dim(x2) # x now has 13 columns, 1 more than before
+    head(x2)
+    
+  # Save x1  and x2 into storage directory
+    # save(x1, file = paste(storage.directory, "x1.RData", sep = "")) 
+    # save(x2, file = paste(storage.directory, "x2.RData", sep = "")) 
+    
+  # write table
+    # write.table(x1, file = paste(storage.directory, "LA2014.csv", sep = ""), row.names = FALSE, sep = ",")
+    # append table
+    # write.table(x2, file = paste(storage.directory, "LA2014.csv", sep = ""), col.names = FALSE, append = TRUE)
+  
+  Sys.time()-a
+  beepr::beep(3)
 
-  rm(x)
 
-  print(Sys.time() - a)
+
 
 
   
