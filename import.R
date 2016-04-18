@@ -7,8 +7,11 @@
 
 # Import Tweets ----
 
-  # LA2014
-    load("~/Desktop/Huang Research/Rsentiment/comTweetsLA.RData") # load LA2014 into memory as x
+  # LA2014 raw
+    load("~/Desktop/Huang Research/Rsentiment/comTweetsLA.RData") # load raw LA2014 into memory as x
+
+  # LA2014 analyzed
+    load("~/Desktop/Huang Research/Rsentiment/LA2014.RData") # load analyzedLA2014 into memory as LA2014
 
   # LA2016
 

@@ -29,6 +29,7 @@ library(caret) #for confusionMatrix
   AFINN_lexicon$word.clean <- gsub("[[:punct:]]", '', AFINN_lexicon$word.clean)  #Removing punctuation
 
 
+
 clean.tweets = function(documents, 
                         usernameToken = "usernametoken", 
                         hashToken = " hashtoken ", 
@@ -58,6 +59,7 @@ clean.tweets = function(documents,
 }
 
 
+
 word.freq <- function(document.vector, sparsity = .99){
   # construct corpus
   temp.corpus <- Corpus(VectorSource(document.vector))
@@ -74,15 +76,23 @@ word.freq <- function(document.vector, sparsity = .99){
   return(freq.df)
 }
 
+
+
 AFINN_lexicon.frequencies=function(x){
   str_count(x,AFINN_lexicon$word.clean)
 }
+
+
 
 ndsi.frequencies=function(x){
   str_count(x,freq.all$word[1:1024])
 }
 
+
+
 negations = c("no", "not","none","nobody","nothing","neither","never","doesnt","isnt","wasnt","shouldnt","wouldnt", "couldnt","wont","cant","dont")
+
+
 
 classify.sentiment = function(documents, lexicon = AFINN_lexicon){
   require(plyr)
@@ -115,55 +125,65 @@ classify.sentiment = function(documents, lexicon = AFINN_lexicon){
 }
 
 
-classify.polarity.machine = function(documents, model = rf.model){
+
+bin.maker = function(binsize, max){
+  nbins = ceiling(max/binsize)
+  result = as.list(1:nbins)
+  for(i in 1:(nbins-1)){
+    result[[i]]=((binsize*(i-1)+1):(binsize*(i)))
+  }
+  result[[nbins]] = ((binsize*(nbins-1)+1):max)
+  return(result)
+}
+
+
+
+classify.polarity.machine = function(documents, chunk.size = 1000, model = rf.model){
   require(plyr)
   require(dplyr)
   require(randomForest)
+  load(file = paste(storage.directory, "rf.model.RData", sep = ""))
   load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
-  ndsi.lexicon = freq.all[freq.all$ndsi>0.05,]
+  ndsi.lexicon = freq.all[1:1024,]
   
-  sentpredvec = laply(documents, function(documents, mod = model)
-  {
-    term.freq <- t(apply(t(documents), 2,    #MAY TAKE TIME!
+  if(length(documents)<chunk.size){stop("chunk.size must be less than length(documents). Also, length(documents) must be at least 2.")}
+  
+  column.names = paste("X", 1:1024, sep = "")
+  result = NULL
+  
+  chunks = bin.maker(chunk.size, length(documents))
+  
+  for(i in 1:length(chunks)){
+    print(paste((i-1)*chunk.size, "out of", length(documents), "rows analyzed:", 
+                round((i-1)*100*chunk.size/length(documents), digits = 1), "percent complete"))
+    
+    term.freq <- t(apply(t(documents[chunks[[i]]]), 2, #MAY TAKE TIME!
                          ndsi.frequencies))
     
-    colnames(term.freq) = paste("X", 1:1024, sep = "") #hacky fix for column names
+    colnames(term.freq) = column.names
     pred.sentiment = predict(model, newdata = term.freq, type = "prob")
-    
-    return(pred.sentiment[1])
-  }, .progress = "text")
-  return(sentpredvec)
-}
-
-
-
-
-multipurpose.classify.polarity.machine = function(documents, model = rf.model, as.prob = FALSE){
-  require(plyr)
-  require(dplyr)
-  load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
-  ndsi.lexicon = freq.all[freq.all$ndsi>0.05,]
+    result = c(result, pred.sentiment[,1])
+  }
   
-  sentpredvec = laply(documents, function(documents, mod = model)
-  {
-    
-    term.freq <- t(apply(t(documents), 2,    #MAY TAKE TIME!
-                         ndsi.frequencies))
-    
-    colnames(term.freq) = paste("X", 1:1024, sep = "") #hacky fix for column names
-    pred.sentiment = predict(model, newdata = term.freq, if(as.prob == TRUE){type = "prob"}else{type = "response"})
-    pred.sentiment = as.numeric(pred.sentiment)
-    
-    return(pred.sentiment)
-  }, .progress = "text")
-  return(sentpredvec)
+  return(result)
 }
 
+
+
+# a = Sys.time()
+#sent140$rf.polarity = classify.polarity.machine(sent140$text, chunk.size = 30)
+# Sys.time()-a
+
+#                                  Starting time: 1.539257 mins
+#         Moving column_names to vector in setup: 1.49686 mins
+#     Restrict ndsi.lexicon to 2^10 = 1024 terms: 1.488172 mins
+#                   Fix the dang colames forever: 1.507144 mins
+#               Put colnames back in their place: 1.446915 mins
+#                    Doing term.freq all at once: 3.961535 SECS  <- Do this. Maybe 1000 rows at a time? Actually 5000
 
 
 
 # Additional functions
-
 # confmatrix=function(y,predy){
 #   matrix=table(y,predy)
 #   accuracy=sum(diag(matrix))/sum(matrix)
@@ -175,4 +195,29 @@ multipurpose.classify.polarity.machine = function(documents, model = rf.model, a
 # rand.which.max=function(x){
 #   index=((1:length(x))[x==(max(x))])
 #   return(sample(c(index,index),1))
+# }
+
+
+
+# old.classify.polarity.machine = function(documents, model = rf.model){
+#   require(plyr)
+#   require(dplyr)
+#   require(randomForest)
+#   load(file = paste(storage.directory, "rf.model.RData", sep = ""))
+#   load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
+#   ndsi.lexicon = freq.all[1:1024,]
+#   column_names = paste("X", 1:1024, sep = "")
+#   print("setup complete")
+#   
+#   sentpredvec = laply(documents, function(documents, mod = model)
+#   {
+#     term.freq <- t(apply(t(documents), 2,    #MAY TAKE TIME!
+#                          ndsi.frequencies))
+#     
+#     colnames(term.freq) = column_names
+#     pred.sentiment = predict(model, newdata = term.freq, type = "prob")
+#     
+#     return(pred.sentiment[1])
+#   }, .progress = "text")
+#   return(sentpredvec)
 # }
