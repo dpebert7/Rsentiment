@@ -28,6 +28,7 @@
     test$polarity = as.factor(test$polarity)
     test$clean = clean.tweets(test$text)
     save(test, file = paste(storage.directory, "sent140.RData", sep = ""))
+    load(file = paste(storage.directory, "sent140.RData", sep = ""))
 
 # Import lexicons ----
 

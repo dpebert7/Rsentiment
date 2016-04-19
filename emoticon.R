@@ -88,8 +88,25 @@
   sad_corpus <- tm_map(sad_corpus, function(x)removeWords(x,stopwords())) # ~1 minute
 
   #Make word cloud. Check reference for options 
-  wordcloud(happy_corpus, max.words = 200) # ~4 minutes
-  wordcloud(sad_corpus, max.words = 200) # ~3 minutes
+  wordcloud(happy_corpus, max.words = 200, # ~4 minutes
+            scale = c(5, 1), 
+            color = c(rep("#AAAAAA", 1), 
+                      rep("#777777", 1), 
+                      rep("#555555", 1), 
+                      rep("#333333", 1),
+                      rep("#111111")),
+            rot.per = 0.1,
+            random.order = FALSE)
+  
+  wordcloud(sad_corpus, max.words = 200, # ~3 minutes
+            scale = c(5, 1), 
+            color = c(rep("#AAAAAA", 1), 
+                      rep("#777777", 1), 
+                      rep("#555555", 1), 
+                      rep("#333333", 1),
+                      rep("#111111")),
+            rot.per = 0.1,
+            random.order = FALSE)
   
 
 # WRITE HAPPY AND SAD TO A BALANCED DF OF 102 000 TWEETS ----

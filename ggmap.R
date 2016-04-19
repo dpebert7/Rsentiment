@@ -29,38 +29,8 @@ Tony_Lien = Tony_Lien[,c("lat", "long", "AFINN.polarity")]
 ThatBoyJoy = x1[x1$username == "ThatBoyJoy",]
 save(ThatBoyJoy, file = paste(storage.directory, "ThatBoyJoy.RData", sep = ""))
 ThatBoyJoy = ThatBoyJoy[,c("lat", "long", "AFINN.polarity")]
+load(file = paste(storage.directory, "ThatBoyJoy.RData", sep = ""))
 
 
-library(ggmap) 
-
-# The Tony_Lien travel map
-Tony_Lien_map <- get_map(location = 'West Covina', zoom = 9)
-ggmap(my_map)
-ggmap(my_map)+
-  geom_point(aes(x = long, y = lat), data = Tony_Lien,
-             alpha = .5, color="darkred", size = 2)
-
-# The ThatBoyJoy travel map
-ThatBoyJoy_map <- get_map(location = 'Bellflower', zoom = 12)
-ggmap(ThatBoyJoy_map)
-ggmap(my_map)+
-  geom_point(aes(x = long, y = lat), data = ThatBoyJoy,
-             alpha = .5, color="darkred", size = 3)
-
-
-# The Tony_Lien travel map
-ThatBoyJoy_map <- get_map(location = 'Bellflower', zoom = 12)
-ggmap(my_map)
-ggmap(my_map)+
-  geom_tile(aes(x = long, y = lat), data = ThatBoyJoy,
-             alpha = .5, color="darkred", size = 3)
-
-# Attempt at heat map using chicago crime map as template
-ggmap(ThatBoyJoy_map) + 
-  geom_tile(data = ThatBoyJoy, aes(x = long, y = lat, alpha = Frequency),
-                           fill = 'red') + theme(axis.title.y = element_blank(), axis.title.x = element_blank())
-
-
-
-
+library(ggmap)
 

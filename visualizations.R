@@ -16,7 +16,9 @@ load(file = paste(storage.directory, "LA2014.RData", sep = "")) # load LA2014 in
   LA2014$hour = NULL
   LA2014$minute = NULL
   LA2014$second = NULL
-  LA2014$time = LA2014$time - (7*3600) # subtract 5 hours to change from UTC to 
+  LA2014$time = as.POSIXlt(LA2014$time - (7*3600)) # subtract 7 hours to change from UTC to PST
+  LA2014$time = as.POSIXct(LA2014$time)
+  
   
 # May still need to +/- 3600's on time column to change time zone
 
@@ -34,7 +36,6 @@ load(file = paste(storage.directory, "LA2014.RData", sep = "")) # load LA2014 in
   
   
 
-
 # Plot hour of day ----
   hour.count = as.data.frame(table(LA2014$time$hour))
   names(hour.count) = c("hour", "frequency")
@@ -45,6 +46,7 @@ load(file = paste(storage.directory, "LA2014.RData", sep = "")) # load LA2014 in
        main = "Time of Day",
        xlab = "hour",
        ylab = "number of tweets")
+
 
 # Plot month (not very interesting) ----
   month.count = as.data.frame(table(LA2014$time$mon))
@@ -128,7 +130,7 @@ ggplot(LAsample, aes(rf.polarity, AFINN.polarity)) +
 # plot AFINN.polarty scores vs rf.polarity scores for Sent140
 # load sent140
 load(file = paste(storage.directory, "sent140.RData", sep = ""))
-sent140Srf.polarity = classify.polarity.machine(sent140$clean, chunk.size = 100)
+sent140$rf.polarity = classify.polarity.machine(sent140$clean, chunk.size = 100)
 sent140$AFINN.polarity = classify.sentiment(sent140$clean)
 sent140$polarity = as.factor(sent140$polarity)
 
