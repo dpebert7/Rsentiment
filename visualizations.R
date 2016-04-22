@@ -134,10 +134,38 @@ sent140$rf.polarity = classify.polarity.machine(sent140$clean, chunk.size = 100)
 sent140$AFINN.polarity = classify.sentiment(sent140$clean)
 sent140$polarity = as.factor(sent140$polarity)
 
-ggplot(sent140, aes(rf.polarity, AFINN.polarity, color = polarity)) +
-  geom_point(size = 2) +
-  ggtitle("Sent140 Classification") +
+ggplot(sent140, aes(rf.score, AFINN.score, color = polarity)) +
+  geom_point(size = 4) +
+  theme(axis.text = element_text(size = 20),
+        axis.title= element_text(size = 30),
+        plot.title= element_text(size = 36),
+        legend.text = element_text(size = 30),
+        legend.title = element_text(size = 30),
+        legend.position = "bottom") +
+  scale_colour_manual(values = c(20,3),
+                    labels = c(" negative   ", " positive"),
+                    name = "Polarity:  ") +
+  ggtitle("Sent140 Classifiers") +
   xlab("rf.polarity") +
   ylab("AFINN.polarity")     # <-- this is the first really good plot!
+ggsave(filename = "sent140.classifiers.png", plot = last_plot(), width = 12, height = 10)
 
 
+set.seed(2016)
+index = sample(nrow(emoticon), nrow(emoticon))
+emoticon = emoticon[index,] #shuffle rows to mix up positives and negatives
+ggplot(emoticon, aes(jitter(rf.score), jitter(AFINN.score, factor = 2), color = polarity)) +
+  geom_point(size = 4, alpha = 0.3) +
+  theme(axis.text = element_text(size = 20),
+        axis.title= element_text(size = 30),
+        plot.title= element_text(size = 36),
+        legend.text = element_text(size = 30),
+        legend.title = element_text(size = 30),
+        legend.position = "bottom") +
+  scale_colour_manual(values = c(20,3),
+                      labels = c(" negative   ", " positive"),
+                      name = "Polarity:  ") +
+  ggtitle("Emoticon Classifiers") +
+  xlab("rf.polarity") +
+  ylab("AFINN.polarity")     # <-- this is the second really good plot!
+ggsave(filename = "emoticon.classifiers.png", plot = last_plot(), width = 12, height = 10)

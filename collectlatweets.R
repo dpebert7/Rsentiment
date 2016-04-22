@@ -6,6 +6,10 @@
 # collecting about 160k-180k tweets every 24 hours and storing it in a .json file 
 # that is about 500MB in size.
 
+# For a great tutorial regarding how to use streamR, and especially information on how to 
+# set up "my_oauth.Rdata", visit the following webpage:
+# <http://bogdanrau.com/blog/collecting-tweets-using-r-and-the-twitter-streaming-api/>
+
 library(ROAuth)
 load("my_oauth.Rdata") # Note to avoid reusing credentials, "my_oauth.Rdata" should only be 
                        # used on the school computer

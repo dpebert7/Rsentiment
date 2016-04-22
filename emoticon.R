@@ -117,8 +117,8 @@
                           c("character", "character", "character", "numeric", "numeric", "POSIXct"))
   
   # Clean tweets, remove blank tweets, then undersample from happy so that happy has as many tweets as sad does.
-  happy_tweets$clean = clean.tweets(happy$text, happyToken = "", sadToken = "") # do NOT tokenize :)
-  sad_tweets$clean = clean.tweets(sad$text, happyToken = "", sadToken = "")     # do NOT tokenize :(
+  happy_tweets$clean = clean.tweets(happy_tweets$text, happyToken = "", sadToken = "") # do NOT tokenize :)
+  sad_tweets$clean = clean.tweets(sad_tweets$text, happyToken = "", sadToken = "")     # do NOT tokenize :(
   happy_tweets$text = NULL
   sad_tweets$text = NULL
   
@@ -134,7 +134,7 @@
   # Initialize polarity of happy and sad tweets
   happy_tweets$polarity = as.factor(1)
   sad_tweets$polarity = as.factor(0)
-  emoticon = rbind(as.data.frame(happy_tweets[,c("clean", "polarity")]),sad_tweets[,c("clean", "polarity")]) 
+  emoticon = as.data.frame(rbind(sad_tweets[,c("clean", "polarity")],happy_tweets[,c("clean", "polarity")])) 
   colnames(emoticon) = c("clean", "polarity") #note that cleaning already took place, so these column names are appropriate
   dim(emoticon)
   table(emoticon$polarity)
@@ -202,8 +202,7 @@
   save(freq.all, file = paste(storage.directory,"freq.all.RData", sep = "")) # save freq.all into memory as freq.all.RData
   load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
 
-  
-  
+
 # Build tf.idf model using emoticon data and new dictionary ----
   
   #Restrict term.freq to words with higher ndsi scores

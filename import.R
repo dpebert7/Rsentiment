@@ -39,8 +39,6 @@
   #ANEW
     ANEW = read.csv(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/ANEW.csv", header = FALSE)
     colnames(ANEW) = c("word", "score")
-    #ANEW$score = ANEW$score-(mean(ANEW$score)+1) #normalize ANEW scores to 0. This didn't work as well as the next line did.
-    ANEW$score = ANEW$score - 6
     range(ANEW$score)
     head(ANEW[order(-ANEW$score),], 20) #happiest words
     head(ANEW[order(ANEW$score),], 20) #saddest words
@@ -80,3 +78,5 @@
     AFINN[pmatch("feeling", AFINN$word),2]
     AFINN[pmatch("creaking", AFINN$word),2]
     AFINN[pmatch("plague", AFINN$word),2]
+    
+    

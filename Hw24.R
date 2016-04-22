@@ -27,164 +27,133 @@ source("functions.R") #get cleaning function, AFINN_lexicon
     sent140$clean = clean.tweets(sent140$text)
 
     
-  # Calculate AFINN scores for emoticon and sent140 using Crawford's method
-    #This has been removed. It was nearly as effective as classify.sentiment, but slower.
-    
   # Calculate AFINN scores using classify.sentiment (which includes a negation stopper)
     #sent140 data
-    sent140$AFINN.rating = classify.sentiment(sent140$clean)
-    sent140$AFINN.rating.pred = sign(sent140$AFINN.rating)
-    table(sent140$AFINN.rating.pred)
-    ans = table(sent140$polarity, sent140$AFINN.rating.pred)
-    ans
-      accuracy = (ans["0","-1"]+ans["1","1"])/(sum(ans[,"-1"])+sum(ans[,"1"])) 
-      accuracy #is 78.05% (excluding neutral tweets)
-      precision = ans["1","1"]/sum(ans[,"1"])
-      precision # precision is 76.78%
-      recall = ans["1","1"]/sum(ans["1",])
-      recall # recall is 70.87%
-      f1 = (2*precision*recall)/(precision + recall)
-      f1 #is 73.71%
-      
+    sent140$AFINN.score = classify.sentiment(sent140$clean)
+    optimize.cutoff(score.vec = sent140$AFINN.score, polarity.vec = sent140$polarity)
+
     #emoticon data
     AFINN_lexicon = AFINN_lexicon[AFINN_lexicon$word != "sadtoken" & AFINN_lexicon$word != "happytoken",]
-    #temporarily remove happytoken and sadtoken from dictionary, which unfairly yields accuracy of 97%
-    
-    emoticon$AFINN.rating = classify.sentiment(emoticon$clean)
-    emoticon$AFINN.rating.pred = sign(emoticon$AFINN.rating)
-    table(emoticon$AFINN.rating.pred)
-    ans = table(emoticon$polarity, emoticon$AFINN.rating.pred)
-    ans
-      accuracy = (ans["0","-1"]+ans["1","1"])/(sum(ans[,"-1"])+sum(ans[,"1"])) 
-      accuracy #is 68.09% (excluding neutral tweets)
-      precision = ans["1","1"]/sum(ans[,"1"])
-      precision # precision is 67.46%
-      recall = ans["1","1"]/sum(ans["1",])
-      recall # recall is 48.47%
-      f1 = (2*precision*recall)/(precision + recall)
-      f1 #is 56.41%
+    emoticon$AFINN.score = classify.sentiment(emoticon$clean)
+    optimize.cutoff(score.vec = emoticon$AFINN.score, polarity.vec = emoticon$polarity)
 
-  # Calculate AFINN scores using classify.sentiment2 (similar to Crawford's method)
-      # Removed. It didn't work great and was computationally expensive.
-    
+
   # Calculate OpinionFinder (formerly known as WIEBE) scores for emoticon and sent140 using classify.sentiment
     #sent140 data
-    sent140$OpinionFinder.rating = classify.sentiment(sent140$clean, lexicon = OpinionFinder)
-    sent140$OpinionFinder.rating.pred = sign(sent140$OpinionFinder.rating)
-    table(sent140$OpinionFinder.rating.pred)
-    ans = table(sent140$polarity, sent140$OpinionFinder.rating.pred)
-    ans
-      accuracy = (ans["0","-1"]+ans["1","1"])/(sum(ans[,"-1"])+sum(ans[,"1"])) 
-      accuracy #is 75.87% (excluding neutral tweets)
-      precision = ans["1","1"]/sum(ans[,"1"])
-      precision # precision is 74.52%
-      recall = ans["1","1"]/sum(ans["1",])
-      recall # recall is 64.28%
-      f1 = (2*precision*recall)/(precision + recall)
-      f1 #is 69.02%
-
+    sent140$OpinionFinder.score = classify.sentiment(sent140$clean, lexicon = OpinionFinder)
+    optimize.cutoff(score.vec = sent140$OpinionFinder.score, polarity.vec = sent140$polarity)
     
     #emoticon data
-    emoticon$OpinionFinder.rating = classify.sentiment(emoticon$clean, lexicon = OpinionFinder)
-    emoticon$OpinionFinder.rating.pred = sign(emoticon$OpinionFinder.rating)
-    table(emoticon$AFINN.rating.pred)
-    ans = table(emoticon$polarity, emoticon$OpinionFinder.rating.pred) 
-    ans
-      accuracy = (ans["0","-1"]+ans["1","1"])/(sum(ans[,"-1"])+sum(ans[,"1"])) 
-      accuracy #is 65.13% (excluding neutral tweets)
-      precision = ans["1","1"]/sum(ans[,"1"])
-      precision # precision is 63.31%
-      recall = ans["1","1"]/sum(ans["1",])
-      recall # recall is 44.76%
-      f1 = (2*precision*recall)/(precision + recall)
-      f1 #is 52.44%
-
-
+    emoticon$OpinionFinder.score = classify.sentiment(emoticon$clean, lexicon = OpinionFinder)
+    optimize.cutoff(score.vec = emoticon$OpinionFinder.score, polarity.vec = emoticon$polarity)
+    
+    
   # Calculate NRC (formerly known as EmoLex) scores for emoticon and sent140 using classify.sentiment
     #sent140 data
-    sent140$NRC.rating = classify.sentiment(sent140$clean, lexicon = NRC)
-    sent140$NRC.rating.pred = sign(sent140$NRC.rating)
-    table(sent140$NRC.rating.pred)
-    ans = table(sent140$polarity, sent140$NRC.rating.pred) 
-    ans
-      accuracy = (ans["0","-1"]+ans["1","1"])/(sum(ans[,"-1"])+sum(ans[,"1"])) 
-      accuracy #is 61.96% (excluding neutral tweets)
-      precision = ans["1","1"]/sum(ans[,"1"])
-      precision # precision is 60.83%
-      recall = ans["1","1"]/sum(ans["1",])
-      recall # recall is 47.80%
-      f1 = (2*precision*recall)/(precision + recall)
-      f1 #is 53.53%
+    sent140$NRC.score = classify.sentiment(sent140$clean, lexicon = NRC)
+    optimize.cutoff(score.vec = sent140$NRC.score, polarity.vec = sent140$polarity)
     
-      
     #emoticon data
-    emoticon$NRC.rating = classify.sentiment(emoticon$clean, lexicon = NRC)
-    emoticon$NRC.rating.pred = sign(emoticon$NRC.rating)
-    table(emoticon$AFINN.rating.pred)
-    ans = table(emoticon$polarity, emoticon$NRC.rating.pred) 
-    ans 
-      accuracy = (ans["0","-1"]+ans["1","1"])/(sum(ans[,"-1"])+sum(ans[,"1"])) 
-      accuracy #is 65.57% (excluding neutral tweets)
-      precision = ans["1","1"]/sum(ans[,"1"])
-      precision # precision is 66.03%
-      recall = ans["1","1"]/sum(ans["1",])
-      recall # recall is 38.28%
-      f1 = (2*precision*recall)/(precision + recall)
-      f1 #is 48.46%  (Note that this is low but it is still an improvement over when pic]: was around...)
-  
+    emoticon$NRC.score = classify.sentiment(emoticon$clean, lexicon = NRC)
+    optimize.cutoff(score.vec = emoticon$NRC.score, polarity.vec = emoticon$polarity)
+    
+
   # Calculate ANEW scores for emoticon and sent140 using classify.sentiment
+  # Note that ANEW scores range from 1 to 9, so the cutoff needs to be calculated more carefully
     #sent140 data
-    sent140$ANEW.rating = classify.sentiment(sent140$clean, lexicon = ANEW)
-    sent140$ANEW.rating.pred = sign(sent140$ANEW.rating)
-    table(sent140$ANEW.rating.pred)
-    ans = table(sent140$polarity, sent140$ANEW.rating.pred) 
-    ans
-      accuracy = (ans["0","-1"]+ans["1","1"])/(sum(ans[,"-1"])+sum(ans[,"1"])) 
-      accuracy #is 74.07% (excluding neutral tweets)
-      precision = ans["1","1"]/sum(ans[,"1"])
-      precision # precision is 81.75%
-      recall = ans["1","1"]/sum(ans["1",])
-      recall # recall is 61.53%
-      f1 = (2*precision*recall)/(precision + recall)
-      f1 #is 70.21%
-
+    sent140$ANEW.score = classify.sentiment(sent140$clean, lexicon = ANEW)
+    optimize.cutoff(score.vec = sent140$ANEW.score, polarity.vec = sent140$polarity, min = 4.5, max = 7, step = 0.001)
+    
     #emoticon data
-    emoticon$ANEW.rating = classify.sentiment(emoticon$clean, lexicon = ANEW)
-    emoticon$ANEW.rating.pred = sign(emoticon$ANEW.rating)
-    table(emoticon$AFINN.rating.pred)
-    ans = table(emoticon$polarity, emoticon$ANEW.rating.pred) 
-    ans
-      accuracy = (ans["0","-1"]+ans["1","1"])/(sum(ans[,"-1"])+sum(ans[,"1"])) 
-      accuracy #is 64.79% (excluding neutral tweets)
-      precision = ans["1","1"]/sum(ans[,"1"])
-      precision # precision is 66.42%
-      recall = ans["1","1"]/sum(ans["1",])
-      recall # recall is 51.09%
-      f1 = (2*precision*recall)/(precision + recall)
-      f1 #is 57.71%
+    emoticon$ANEW.score = classify.sentiment(emoticon$clean, lexicon = ANEW)
+    optimize.cutoff(score.vec = emoticon$ANEW.score, polarity.vec = emoticon$polarity, min = 4.5, max = 7, step = 0.1)
+   
+    
+  # Calculate rf.polarity scores for emoticon and sent140 using classify.sentiment
+  # Note that rf.polarity scores range from 0 to 1, so the cutoff needs to be calculated more carefully
+    #sent140 data
+    sent140$rf.score = classify.polarity.machine(sent140$clean, chunk.size = 100, model = rf.model)
+    optimize.cutoff(score.vec = sent140$rf.score, polarity.vec = sent140$polarity, min = 0.4, max = 0.8, step = 0.001)
+    
+    #emoticon data
+    emoticon$rf.score = classify.polarity.machine(emoticon$clean, chunk.size = 10000, model = rf.model)
+    optimize.cutoff(score.vec = emoticon$rf.score, polarity.vec = emoticon$polarity, min = 0.4, max = 0.7, step = 0.005)
 
+    
+  # Save data frames with scores
+    save(sent140, file = paste(storage.directory,"sent140.with.lexicon.scores.RData", sep = "")) # save sent140 lexicon into memory
+    save(emoticon, file = paste(storage.directory,"emoticon.with.lexicon.scores.RData", sep = "")) # save emoticon lexicon into memory
+    
+    
+  # Example ggplot showing separation
+    ggplot(sent140, aes(sent140[,"AFINN.score"], fill = as.factor(polarity))) + geom_density(alpha = .2, adjust = 1) + 
+      theme(axis.text = element_text(size = 25),
+            axis.title= element_text(size = 35),
+            plot.title= element_text(size = 40),
+            legend.text = element_text(size = 35),
+            legend.title = element_text(size = 35),
+            legend.position = "bottom") +
+      scale_fill_manual(values = c(20,3),
+                        labels = c(" negative   ", " positive"),
+                        name = "Polarity:  ") +
+      labs(x = "AFINN.score", y = "density") + ggtitle("AFINN.score densities over sent140")
+    ggsave(filename = "afinn.sent140.png", plot = last_plot(), width = 12, height = 10)
+    
+    ggplot(emoticon, aes(emoticon[,"AFINN.score"], fill = as.factor(polarity))) + geom_density(alpha = .2, adjust = 4) +
+      theme(axis.text = element_text(size = 25),
+            axis.title= element_text(size = 35),
+            plot.title= element_text(size = 40),
+            legend.text = element_text(size = 35),
+            legend.title = element_text(size = 35),
+            legend.position = "bottom") +
+      scale_fill_manual(values = c(20,3),
+                        labels = c(" negative   ", " positive"),
+                        name = "Polarity:  ") +
+      labs(x = "AFINN.score", y = "density") + ggtitle("AFINN.score densities over emoticon") 
+    ggsave(filename = "afinn.emoticon.png", plot = last_plot(), width = 12, height = 10)
+    
+    
+    ggplot(sent140, aes(sent140[,"rf.score"], fill = as.factor(polarity))) + geom_density(alpha = .2) + 
+      theme(axis.text = element_text(size = 25),
+            axis.title= element_text(size = 35),
+            plot.title= element_text(size = 40),
+            legend.text = element_text(size = 35),
+            legend.title = element_text(size = 35),
+            legend.position = "bottom") +
+      scale_fill_manual(values = c(20,3),
+                        labels = c(" negative   ", " positive"),
+                        name = "Polarity:  ") +
+      labs(x = "rf.score", y = "density") + ggtitle("rf.score densities over sent140") 
+    ggsave(filename = "rf.sent140.png", plot = last_plot(), width = 12, height = 10)
+    
+    ggplot(emoticon, aes(emoticon[,"rf.score"], fill = as.factor(polarity))) + geom_density(alpha = .2) + 
+      theme(axis.text = element_text(size = 25),
+            axis.title= element_text(size = 35),
+            plot.title= element_text(size = 40),
+            legend.text = element_text(size = 35),
+            legend.title = element_text(size = 35),
+            legend.position = "bottom") +
+      scale_fill_manual(values = c(20,3),
+                        labels = c(" negative   ", " positive"),
+                        name = "Polarity:  ") +
+      labs(x = "rf.score", y = "density") + ggtitle("rf.score densities over emoticon")
+    ggsave(filename = "rf.emoticon.png", plot = last_plot(), width = 12, height = 10)
+    
+    
+  # for loop iterating through all possible plots
+    classifiers = c("AFINN", "OpinionFinder", "NRC", "ANEW", "rf")
+    for(i in classifiers){
+      model.name = paste(i, ".score", sep = "")
+      print(ggplot(sent140, aes(sent140[,model.name], fill = as.factor(polarity))) + geom_density(alpha = .2) +
+        labs(x = model.name, y = "density") + ggtitle(paste(model.name, "Densities over sent140")))
+      print(ggplot(emoticon, aes(emoticon[,model.name], fill = as.factor(polarity))) + geom_density(alpha = .2) +
+        labs(x = model.name, y = "density") + ggtitle(paste(model.name, "Densities over emoticon")))
+    }
 
-# MODELS INVOLVING AFINN SCORE (using only sent140 data) ----
-    #I think this is junk now. But just in case...
-                          a = Sys.time()
-                          term.freq <- t(apply(t(sent140$clean), 2, AFINN_lexicon.frequencies))
-                          Sys.time()-a
-                          
-                          dim(term.freq)
-                          sent140$AFINN.rating = as.vector(term.freq %*% AFINN_lexicon$score)
-                        
-                          sent140$pred = sign(sent140$AFINN.rating)
-                          table(sent140$pred)
-                          table(sent140$polarity, sent140$pred)
-                          #accuracy is (102+142)/(102+17+50+142) = 78% (excluding neutral tweets)
-                        
-                          
-                          #naive bayes model with AFINN score
-                          nb.model = naiveBayes(polarity ~ AFINN.rating, data = emoticon)
 
 # B BAG OF WORDS (random forest using term frequencies) ----
   
-  # Lexicon from the emoticoning (emoticon) data
+  # Lexicon from the emoticon (emoticon) data
     load(paste(storage.directory, "emoticon.RData", sep = "")) # load emoticon/emoticon into memory as emoticon
     table(emoticon$polarity)
     

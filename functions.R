@@ -168,11 +168,10 @@ classify.polarity.machine = function(documents, chunk.size = 1000, model = rf.mo
   return(result)
 }
 
-
-
 # a = Sys.time()
 #sent140$rf.polarity = classify.polarity.machine(sent140$text, chunk.size = 30)
 # Sys.time()-a
+
 
 #                                  Starting time: 1.539257 mins
 #         Moving column_names to vector in setup: 1.49686 mins
@@ -180,6 +179,27 @@ classify.polarity.machine = function(documents, chunk.size = 1000, model = rf.mo
 #                   Fix the dang colames forever: 1.507144 mins
 #               Put colnames back in their place: 1.446915 mins
 #                    Doing term.freq all at once: 3.961535 SECS  <- Do this. Maybe 1000 rows at a time? Actually 5000
+
+
+
+
+#Optimize cutoff value for classifier scores
+optimize.cutoff = function(score.vec, polarity.vec, min = -10, max = 10, step = 1){
+  require(caret)
+  require(pROC)
+  cutoffs = seq(min, max, by = step)
+  accuracy.vec=1:length(cutoffs)
+  for(i in 1:length(cutoffs)){
+    accuracy.vec[i] = confusionMatrix(as.numeric(score.vec>=(cutoffs[i])),polarity.vec)$overall[1]
+  }
+  print(plot(roc(polarity.vec, score.vec)))
+  print(accuracy.vec)
+  optimal.cutoff = cutoffs[which.max(accuracy.vec)]
+  print(confusionMatrix(as.numeric(score.vec>=(optimal.cutoff)),polarity.vec)$overall[1])
+  return(optimal.cutoff)
+}
+
+
 
 
 
