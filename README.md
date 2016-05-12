@@ -15,3 +15,6 @@ supervisedLAtweets.R is a failed attempt to collect old tweets from LA county. I
 crawfordCode.R is code from Dr. Crawford's Data Mining 2 class. It is the foundation of trainedClassifier.R
 
 keepcapturingLAtweets.R continuously captures geotagged tweets from LA county. The most up-to-date version of this script is running on the shared school computer.
+
+visualizations.R provides visualizes data from LA2014 and the classifiers using ggplot2
+

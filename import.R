@@ -42,6 +42,7 @@
     range(ANEW$score)
     head(ANEW[order(-ANEW$score),], 20) #happiest words
     head(ANEW[order(ANEW$score),], 20) #saddest words
+    ANEW$score = ANEW$score-median(ANEW$score)
 
   #NRC Word-Emotion Association Lexicon (formerly known as EmoLex)
     NRC = read.csv(file = "~/Desktop/Documents/GitRepos/Rsentiment/Lexicons/EmoLex/NRC-emotion-lexicon-wordlevel-alphabetized-v0.92.txt",
@@ -54,10 +55,9 @@
     colnames(NRC) = c("word", "score")
 
   #OpinionFinder Lexicon (Formerly known as Wiebe)
-    OpinionFinder = read.csv(system.file("data/subjectivity.csv.gz", 
-                                     package = "sentiment"), header = FALSE, stringsAsFactors = FALSE)
+    OpinionFinder = read.csv("Lexicons/opinionFinder.csv", header = FALSE, stringsAsFactors = FALSE)
     #write.csv(OpinionFinder, file = "OpinionFinder")
-    OpinionFinder = as.data.frame(cbind(as.character(OpinionFinder$V1), as.integer(2*(OpinionFinder$V3 == "positive")-1)))
+    OpinionFinder = as.data.frame(cbind(as.character(OpinionFinder$V2), as.integer(2*(OpinionFinder$V4 == "positive")-1)))
     colnames(OpinionFinder) = c("word", "score")
     OpinionFinder$score = as.integer(OpinionFinder$score)
     OpinionFinder$score = (((OpinionFinder$score-1)*2)-1)*-1

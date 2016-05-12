@@ -20,14 +20,12 @@ source("functions.R") #get cleaning function, AFINN_lexicon
   
     sent140[sent140$polarity == 0,]$polarity = 0
     sent140[sent140$polarity == 4,]$polarity = 1
-    sent140(sent140$polarity)
-  
+    
     sent140 = sent140[sent140$polarity !=2, c("polarity", "text")]
     sent140$polarity = as.factor(sent140$polarity)
     sent140$clean = clean.tweets(sent140$text)
 
-    
-  # Calculate AFINN scores using classify.sentiment (which includes a negation stopper)
+  # Calculate AFINN scores using classify.sentiment (which includes a negation stopper and uses MATCH instead of PMATCH)
     #sent140 data
     sent140$AFINN.score = classify.sentiment(sent140$clean)
     optimize.cutoff(score.vec = sent140$AFINN.score, polarity.vec = sent140$polarity)
@@ -62,11 +60,11 @@ source("functions.R") #get cleaning function, AFINN_lexicon
   # Note that ANEW scores range from 1 to 9, so the cutoff needs to be calculated more carefully
     #sent140 data
     sent140$ANEW.score = classify.sentiment(sent140$clean, lexicon = ANEW)
-    optimize.cutoff(score.vec = sent140$ANEW.score, polarity.vec = sent140$polarity, min = 4.5, max = 7, step = 0.001)
+    optimize.cutoff(score.vec = sent140$ANEW.score, polarity.vec = sent140$polarity, min = 1, max = 4, step = 0.005)
     
     #emoticon data
     emoticon$ANEW.score = classify.sentiment(emoticon$clean, lexicon = ANEW)
-    optimize.cutoff(score.vec = emoticon$ANEW.score, polarity.vec = emoticon$polarity, min = 4.5, max = 7, step = 0.1)
+    optimize.cutoff(score.vec = emoticon$ANEW.score, polarity.vec = emoticon$polarity, min = 1, max = 4, step = 0.05)
    
     
   # Calculate rf.polarity scores for emoticon and sent140 using classify.sentiment
@@ -99,7 +97,7 @@ source("functions.R") #get cleaning function, AFINN_lexicon
       labs(x = "AFINN.score", y = "density") + ggtitle("AFINN.score densities over sent140")
     ggsave(filename = "afinn.sent140.png", plot = last_plot(), width = 12, height = 10)
     
-    ggplot(emoticon, aes(emoticon[,"AFINN.score"], fill = as.factor(polarity))) + geom_density(alpha = .2, adjust = 4) +
+    ggplot(emoticon, aes(emoticon[,"AFINN.score"], fill = as.factor(polarity))) + geom_density(alpha = .2, adjust = 7) +
       theme(axis.text = element_text(size = 25),
             axis.title= element_text(size = 35),
             plot.title= element_text(size = 40),

@@ -101,7 +101,7 @@ classify.sentiment = function(documents, lexicon = AFINN_lexicon){
   {
     words = unlist(strsplit(documents, " ")) #access words
     #eventually add words to term-document matrix here?
-    indices = pmatch(words, lexicon[,1], nomatch = 0, duplicates.ok = TRUE)
+    indices = match(words, lexicon[,1], nomatch = 0)
     vals = as.numeric(lexicon[indices,2])
     #print(c(words, indices, vals))
     
