@@ -157,94 +157,69 @@
   word.freq.neg[1:20,]
   
   #Merge by word
-  freq.all = merge(word.freq.neg, word.freq.pos, by = 'word', all = T)
+  ndsi.lexicon = merge(word.freq.neg, word.freq.pos, by = 'word', all = T)
   
   dim(word.freq.pos)
   dim(word.freq.neg)
-  dim(freq.all)
+  dim(ndsi.lexicon)
   
   word.freq.pos[1:20,]
   word.freq.neg[1:20,]
-  freq.all[1:20,]
+  ndsi.lexicon[1:20,]
   
   #Set NA's to 0
-  freq.all$freq.x[is.na(freq.all$freq.x)] = 0
-  freq.all$freq.y[is.na(freq.all$freq.y)] = 0
+  ndsi.lexicon$freq.x[is.na(ndsi.lexicon$freq.x)] = 0
+  ndsi.lexicon$freq.y[is.na(ndsi.lexicon$freq.y)] = 0
   
   #Differences between Positive and Negative Frequencies
-  freq.all$diff = abs(freq.all$freq.x - freq.all$freq.y)
-  head(freq.all[order(-freq.all$diff), ],100) #this is somewhat puzzling
+  ndsi.lexicon$diff = abs(ndsi.lexicon$freq.x - ndsi.lexicon$freq.y)
+  head(ndsi.lexicon[order(-ndsi.lexicon$diff), ],100) #this is somewhat puzzling
   
   #Smoothing term
   alpha <- 2^7
   
   #NDSI
-  freq.all$ndsi = abs(freq.all$freq.x -
-                        freq.all$freq.y)/(freq.all$freq.x +
-                                            freq.all$freq.y +
+  ndsi.lexicon$ndsi = abs(ndsi.lexicon$freq.x -
+                            ndsi.lexicon$freq.y)/(ndsi.lexicon$freq.x +
+                                                    ndsi.lexicon$freq.y +
                                             2 * alpha)
   
   #Sorting by NDSI
-  freq.all = freq.all[order(-freq.all$ndsi), ]
-  head(freq.all, 100)
+  ndsi.lexicon = ndsi.lexicon[order(-ndsi.lexicon$ndsi), ]
+  head(ndsi.lexicon, 100)
   
   #Convert word to a string
-  head(freq.all$word)
-  freq.all$word = as.character(freq.all$word)
-  head(freq.all$word,100)
-  freq.all = freq.all[freq.all$ndsi>0,] # restrict to words with a nonzero ndsi score.
+  head(ndsi.lexicon$word)
+  ndsi.lexicon$word = as.character(ndsi.lexicon$word)
+  head(ndsi.lexicon$word,100)
+  ndsi.lexicon = ndsi.lexicon[ndsi.lexicon$ndsi>0,] # restrict to words with a nonzero ndsi score.
   
-  freq.all$word = as.character(freq.all$word)
+  ndsi.lexicon$word = as.character(ndsi.lexicon$word)
   
-  dim(freq.all)
-  head(freq.all)
-  freq.all = freq.all[freq.all$word != "sadtoken" & freq.all$word != "happytoken",]
-  save(freq.all, file = paste(storage.directory,"freq.all.RData", sep = "")) # save freq.all into memory as freq.all.RData
-  load(paste(storage.directory,"freq.all.RData", sep = "")) # load freq.all lexicon into memory as freq.all
+  dim(ndsi.lexicon)
+  head(ndsi.lexicon)
+  ndsi.lexicon = ndsi.lexicon[ndsi.lexicon$word != "sadtoken" & ndsi.lexicon$word != "happytoken",]
+  save(ndsi.lexicon, file = paste(storage.directory,"ndsi.lexicon.RData", sep = "")) # save ndsi.lexicon into memory as ndsi.lexicon.RData
+  
 
 
-# Build tf.idf model using emoticon data and new dictionary ----
+# Build tf.idf model using emoticon data, AFINN score, and new lexicon ----
+  
+  #Load ndsi.lexicon lexicon
+  load(paste(storage.directory,"ndsi.lexicon.RData", sep = "")) # load ndsi.lexicon lexicon into memory as ndsi.lexicon
   
   #Restrict term.freq to words with higher ndsi scores
-  freq.all = freq.all[freq.all$ndsi>0.05,]
-  dim(freq.all)
+  ndsi.lexicon = ndsi.lexicon[ndsi.lexicon$ndsi>0.05,] #1073 terms used
+  dim(ndsi.lexicon)
   
   
-  #Term Frequencies (Takes about 25 minutes to run with 100k tweets)
+  #Term Frequencies (Takes about 10 minutes to run with 93k tweets)
   a = Sys.time()
   emoticon.term.freq <- t(apply(t(emoticon[,"clean"]), 2,    #TAKES TIME; 10 minutes for 100 000 tweets and 1276 terms 
                        ndsi.frequencies))
   Sys.time()-a
   
-  emoticon.term.freq = data.frame(polarity=emoticon$polarity, emoticon.term.freq)
+  emoticon.term.freq = data.frame(polarity=emoticon$polarity, AFINN = emoticon$AFINN.score, emoticon.term.freq)
   
   save(emoticon.term.freq, file = paste(storage.directory,"emoticon.term.freq.RData", sep = "")) # save emoticon.term.freq lexicon into memory as tf.idf
   load(paste(storage.directory,"emoticon.term.freq.RData", sep = "")) # load emoticon.term.freq lexicon into memory as tf.idf
-
-  
-                #Try Skipping this for now
-                inv.doc.freq=log(nrow(emoticon)/colSums(sign(term.freq)))
-                range(inv.doc.freq)
-                
-                inv.doc.freq[is.infinite(inv.doc.freq)]=0
-                range(inv.doc.freq)
-                
-                #SAVE inv.doc.freq for later use. In particular we care about its diagonal.
-                save(inv.doc.freq, file = paste(storage.directory, "inv.doc.freq.RData", sep = "")) #save inv.doc freq for classifier
-                load(file = paste(storage.directory, "inv.doc.freq.RData", sep = ""))
-                
-                tf.idf = term.freq %*% diag(inv.doc.freq)
-                
-                save(tf.idf, file = paste(storage.directory,"tf.idf.RData", sep = "")) # save tf.idf lexicon into memory as tf.idf
-                load(paste(storage.directory,"tf.idf.RData", sep = "")) # load tf.idf lexicon into memory as tf.idf
-  
-                save(emoticon.term.freq, file = paste(storage.directory,"tf.idf.RData", sep = "")) # save tf.idf lexicon into memory as tf.idf
-                load(paste(storage.directory,"tf.idf.RData", sep = "")) # load tf.idf lexicon into memory as tf.idf
-              
-                # emoticon.tf.idf for training and testing machine learning classifiers using EMOTICON data ----
-                emoticon.tf.idf = data.frame(polarity=emoticon$polarity, tf.idf)
-                
-                save(emoticon.tf.idf, file = paste(storage.directory,"emoticon.tf.idf.RData", sep = "")) # save emoticon.tf.idf lexicon into memory as tf.idf
-                load(paste(storage.directory,"emoticon.tf.idf.RData", sep = "")) # load emoticon.tf.idf lexicon into memory as tf.idf
-
-

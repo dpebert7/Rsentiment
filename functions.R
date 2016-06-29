@@ -85,7 +85,7 @@ AFINN_lexicon.frequencies=function(x){
 
 
 ndsi.frequencies=function(x){
-  str_count(x,freq.all$word[1:1024])
+  str_count(x,freq.all$word[1:nrow(freq.all)])
 }
 
 
