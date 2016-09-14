@@ -194,15 +194,17 @@ source("functions.R") #get cleaning function, AFINN_lexicon
       #  2000                                         6.08 hours
       
       #  nTrain    1 core     2 cores     3 cores     4 cores
-      #  5000                                          hours
+      #  5000                                         18.59 hours -- saved
       
+      #  nTrain    4 cores
+      #  25 000    ?? days
       
       Sys.time()
       a = Sys.time()
       rf.model = train(polarity~., data = emoticon.term.freq[train_indices,], method = "rf")
       Sys.time()-a
       beepr::beep(3)
-    
+      save(rf.model, file = paste(storage.directory, "rf.model.RData", sep = ""))
     
     # Random Forest (SLOW: Takes MANY HOURS to run)
       library(randomForest)

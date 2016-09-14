@@ -13,7 +13,7 @@
   # Import x
     x = read.csv(file = "~/Desktop/Huang Research/Rsentiment/ComTweetsLA.csv", skip = 1, nrows = 9400000, header = FALSE, colClasses = 
                    c("character", "character", "character", "numeric", "numeric", "integer", "integer", "integer", "integer", "integer", "integer"))
-    colnames(x) = c("text","username","tweet_id","lat","long","year","month","date","hour","minute","second")
+    colnames(x) = c("text","username","tweet_id","lat","lon","year","month","date","hour","minute","second")
     
   # Save x into storage directory
     save(x, file = paste(storage.directory, "x.RData", sep = "")) 
